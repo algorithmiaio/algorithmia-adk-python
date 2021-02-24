@@ -4,24 +4,16 @@ from setuptools import setup
 
 setup(
     name='algorithmia-adk',
-    version='0.1.2',
-    description='Algorithmia python ADK client',
-    long_description='Algorithmia Python Client is a client library for accessing Algorithmia from python code. This library also gets bundled with any Python algorithms in Algorithmia.',
-    url='http://github.com/algorithmiaio/algorithmia-python',
+    version='0.1.0',
+    description='adk python ADK client',
+    long_description='adk Development Kit code used for creating Python algorithms on adk.',
+    url='http://github.com/algorithmiaio/algorithmia-adk-python',
     license='MIT',
-    author='Algorithmia',
+    author='adk',
     author_email='support@algorithmia.com',
-    packages=['Algorithmia'],
-    entry_points = {
-    'console_scripts': ['algo = Algorithmia.__main__:main']
-    },
+    packages=['adk'],
     install_requires=[
-        'requests',
         'six',
-        'enum34',
-        'toml',
-        'argparse',
-        'algorithmia-api-client>=1.3,<1.4'
     ],
     include_package_data=True,
     classifiers=[
@@ -31,11 +23,12 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 )

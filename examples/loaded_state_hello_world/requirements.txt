@@ -1,0 +1,2 @@
+algorithmia>=1.7,<2
+algorithmia-adk>=1.0,<2

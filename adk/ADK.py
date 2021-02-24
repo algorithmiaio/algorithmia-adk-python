@@ -10,7 +10,7 @@ import six
 
 class ADK(object):
 
-    def __init__(self, apply_func, load_func):
+    def __init__(self, apply_func, load_func=None):
         """
         Creates the adk object
         :param apply_func: A required function that can have an arity of 1-2, depending on if loading occurs
@@ -20,20 +20,26 @@ class ADK(object):
         apply_args, _, _, apply_defaults, _, _, _ = inspect.getfullargspec(apply_func)
         # apply_args, _, _, apply_defaults = inspect.getargspec(apply_func)
         # j = inspect.getfullargspec(apply_func)
-        load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
-        if len(load_args) > 0:
-            raise Exception("load function must not have parameters")
+        if load_func:
+            load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
+            if len(load_args) > 0:
+                raise Exception("load function must not have parameters")
+            self.load_func = load_func
+        else:
+            self.load_func = None
         if len(apply_args) > 2 or len(apply_args) == 0:
             raise Exception("apply function may have between 1 and 2 parameters, not {}".format(len(apply_args)))
         self.apply_func = apply_func
-        self.load_func = load_func
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
 
     def load(self):
         self.load_result = self.load_func()
-        print('PIPE_INIT_COMPLETE')
-        sys.stdout.flush()
+        if self.is_local:
+            print("loading complete")
+        else:
+            print('PIPE_INIT_COMPLETE')
+            sys.stdout.flush()
 
     def format_data(self, request):
         if request['content_type'] in ['text', 'json']:
@@ -74,36 +80,45 @@ class ADK(object):
         })
         return response_string
 
-    def write_to_pipe(self, data_string):
+    def write_to_pipe(self, payload):
         if self.is_local:
-            return data_string
+            if isinstance(payload, dict):
+                raise Exception(payload)
+            else:
+                print(payload)
         else:
             if os.name == "posix":
                 with open(self.FIFO_PATH, 'w') as f:
-                    f.write(data_string)
+                    f.write(payload)
                     f.write('\n')
                 sys.stdout.flush()
             if os.name == "nt":
-                sys.stdin = data_string
+                sys.stdin = payload
+
+    def create_exception(self, exception):
+        if hasattr(exception, 'error_type'):
+            error_type = exception.error_type
+        else:
+            error_type = 'AlgorithmError'
+        response = {
+            'error': {
+                'message': str(exception),
+                'stacktrace': traceback.format_exc(),
+                'error_type': error_type
+            }
+        }
+        return response
 
     def serve(self):
         try:
-            self.load()
+            if self.load_func:
+                self.load()
         except Exception as e:
-            if hasattr(e, 'error_type'):
-                error_type = e.error_type
-            else:
-                error_type = 'AlgorithmError'
-            load_error_string = json.dumps({
-                'error': {
-                    'message': str(e),
-                    'stacktrace': traceback.format_exc(),
-                    'error_type': error_type
-                }
-            })
-            l = self.write_to_pipe(load_error_string)
-            return l
-        response_string = ""
+            load_error = self.create_exception(e)
+            self.write_to_pipe(load_error)
+        response_obj = ""
+        if self.is_local:
+            print("waiting for input...")
         for line in sys.stdin:
             try:
                 request = json.loads(line)
@@ -112,20 +127,8 @@ class ADK(object):
                     apply_result = self.apply_func(formatted_input, self.load_result)
                 else:
                     apply_result = self.apply_func(formatted_input)
-                response_string = self.format_response(apply_result)
+                response_obj = self.format_response(apply_result)
             except Exception as e:
-                if hasattr(e, 'error_type'):
-                    error_type = e.error_type
-                else:
-                    error_type = 'AlgorithmError'
-                response_string = json.dumps({
-                    'error': {
-                        'message': str(e),
-                        'stacktrace': traceback.format_exc(),
-                        'error_type': error_type
-                    }
-                })
+                response_obj = self.create_exception(e)
             finally:
-                res = self.write_to_pipe(response_string)
-                if res:
-                    return res
+                self.write_to_pipe(response_obj)

@@ -1,12 +1,17 @@
-# Algorithm Development Kit (ADK), Python edition 
+# Algorithm Development Kit (ADK), Python edition
+
 ```python
-import Algorithmia
+import from adk import ADK
+
+
 # API calls will begin at the apply() method, with the request body passed as 'input'
 # For more details, see algorithmia.com/developers/algorithm-development/languages
 
 def apply(input):
     return "hello {}".format(str(input))
-algo = Algorithmia.handler(apply)
+
+
+algo = ADK(apply)
 algo.serve()
 ```
 
@@ -31,12 +36,12 @@ This kit, when implemented by an algorithm developer - enables an easy way to ge
 
 Algorithm development does change with this introduction:
 - Primary development file has been renamed to `src/Algorithm.py` to aide in understanding around what this file actually does / why it's important
-- An additional import (`from Algorithmia import Handler`)
+- An additional import (`from adk import ADK`)
 - An optional `load()` function that can be implemented
     - this enables a dedicated function for preparing your algorithm for runtime operations, such as model loading, configuration, etc
 - A call to the handler function with your `apply` and optional` load` functions as inputs
     - ```python
-      algo = Algorithmia.handler(apply)
+      algo = ADK(apply)
       algo.serve()
       ```
     - converts the project into an executable, rather than a library
@@ -45,4 +50,7 @@ Algorithm development does change with this introduction:
       - this includes being able to step through your algorithm code in your IDE of choice! Just execute your `src/Algorithm.py` script
 
 ## Example workflows
-TODO
+Check out these examples to help you get started:
+- [hello world example](examples/hello_world)
+- [hello world example with loaded state](examples/loaded_state_hello_world)
+- [pytorch based image classification](examples/pytorch_image_classification)
