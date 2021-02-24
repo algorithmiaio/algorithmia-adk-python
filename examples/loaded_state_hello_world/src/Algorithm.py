@@ -25,4 +25,4 @@ def load():
 algo = ADK(apply, load)
 # The 'serve()' function actually starts the algorithm, you can follow along in the source code
 # to see how everything works.
-algo.serve()
+algo.serve("Algorithmia")

@@ -1,7 +1,8 @@
 # Algorithm Development Kit (ADK), Python edition
 
 ```python
-import from adk import ADK
+import Algorithmia
+from adk import ADK
 
 
 # API calls will begin at the apply() method, with the request body passed as 'input'
@@ -12,7 +13,7 @@ def apply(input):
 
 
 algo = ADK(apply)
-algo.serve()
+algo.serve("Algorithmia")
 ```
 
 This document will describe the following:
@@ -38,16 +39,17 @@ Algorithm development does change with this introduction:
 - Primary development file has been renamed to `src/Algorithm.py` to aide in understanding around what this file actually does / why it's important
 - An additional import (`from adk import ADK`)
 - An optional `load()` function that can be implemented
-    - this enables a dedicated function for preparing your algorithm for runtime operations, such as model loading, configuration, etc
+    - This enables a dedicated function for preparing your algorithm for runtime operations, such as model loading, configuration, etc
 - A call to the handler function with your `apply` and optional` load` functions as inputs
     - ```python
       algo = ADK(apply)
-      algo.serve()
+      algo.serve("Algorithmia")
       ```
-    - converts the project into an executable, rather than a library
-      - which will interact with the `langserver` service on Algorithmia
-      - but is debuggable via stdin/stdout when executed locally / outside of an Algorithm container
-      - this includes being able to step through your algorithm code in your IDE of choice! Just execute your `src/Algorithm.py` script
+    - Converts the project into an executable, rather than a library
+      - Which will interact with the `langserver` service on Algorithmia
+      - But is debuggable via stdin/stdout when executed locally / outside of an Algorithm container
+        - When a payload is provided to `serve()`, that payload will be directly provided to your algorithm when executed locally, bypassing stdin parsing and simplifying debugging!
+      - This includes being able to step through your algorithm code in your IDE of choice! Just execute your `src/Algorithm.py` script and try stepping through your code with your favorite IDE
 
 ## Example workflows
 Check out these examples to help you get started:

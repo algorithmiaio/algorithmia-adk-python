@@ -109,16 +109,8 @@ class ADK(object):
         }
         return response
 
-    def serve(self):
-        try:
-            if self.load_func:
-                self.load()
-        except Exception as e:
-            load_error = self.create_exception(e)
-            self.write_to_pipe(load_error)
+    def process_loop(self):
         response_obj = ""
-        if self.is_local:
-            print("waiting for input...")
         for line in sys.stdin:
             try:
                 request = json.loads(line)
@@ -132,3 +124,20 @@ class ADK(object):
                 response_obj = self.create_exception(e)
             finally:
                 self.write_to_pipe(response_obj)
+
+    def serve(self, local_payload=None):
+        try:
+            if self.load_func:
+                self.load()
+        except Exception as e:
+            load_error = self.create_exception(e)
+            self.write_to_pipe(load_error)
+        if self.is_local and local_payload:
+            if self.load_result:
+                apply_result = self.apply_func(local_payload, self.load_result)
+            else:
+                apply_result = self.apply_func(local_payload)
+            print(self.format_response(apply_result))
+
+        else:
+            self.process_loop()

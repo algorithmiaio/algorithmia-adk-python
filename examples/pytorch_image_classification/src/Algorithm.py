@@ -90,5 +90,5 @@ def apply(input, state):
         raise Exception('input must be a json object')
 
 
-adk = ADK(apply_func=apply, load_func=load)
-adk.serve()
+algo = ADK(apply_func=apply, load_func=load)
+algo.serve({"data": "https://i.imgur.com/bXdORXl.jpeg"})
