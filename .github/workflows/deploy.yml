@@ -1,0 +1,26 @@
+name: deploy-to-pypi
+
+on:
+  push:
+    branches: [release]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@master
+    - uses: actions/setup-python@v2
+      with:
+          python-version: '3.7.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+    - name: compile
+      run: |
+        python3 setup.py bdist_wheel --universal
+    - name: Publish a Python distribution to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: ${{secrets.PYPI_API_USERNAME}}
+        password: ${{ secrets.PYPI_API_PASSWORD }}
+        verbose: true
