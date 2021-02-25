@@ -17,6 +17,7 @@ jobs:
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
     - name: compile
       run: |
+        pip3 install wheel
         python3 setup.py bdist_wheel --universal
     - name: Publish a Python distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
