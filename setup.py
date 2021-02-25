@@ -9,7 +9,7 @@ setup(
     long_description='adk Development Kit code used for creating Python algorithms on adk.',
     url='http://github.com/algorithmiaio/algorithmia-adk-python',
     license='MIT',
-    author='adk',
+    author='Algorithmia',
     author_email='support@algorithmia.com',
     packages=['adk'],
     install_requires=[
