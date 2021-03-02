@@ -66,9 +66,7 @@ class ADK(object):
     def format_response(self, response):
         if self.is_binary(response):
             content_type = "binary"
-            response = base64.b64encode(response)
-            if not isinstance(response, six.string_types):
-                response = str(response, "utf-8")
+            response = str(base64.b64encode(response), "utf-8")
         elif isinstance(response, six.string_types) or isinstance(
             response, six.text_type
         ):
