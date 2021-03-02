@@ -9,7 +9,6 @@ import six
 
 
 class ADK(object):
-
     def __init__(self, apply_func, load_func=None):
         """
         Creates the adk object
@@ -17,9 +16,7 @@ class ADK(object):
         :param load_func: An optional supplier function used if load time events are required, has an arity of 0.
         """
         self.FIFO_PATH = "/tmp/algoout"
-        apply_args, _, _, apply_defaults, _, _, _ = inspect.getfullargspec(apply_func)
-        # apply_args, _, _, apply_defaults = inspect.getargspec(apply_func)
-        # j = inspect.getfullargspec(apply_func)
+        apply_args, _, _, _, _, _, _ = inspect.getfullargspec(apply_func)
         if load_func:
             load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
             if len(load_args) > 0:
@@ -28,7 +25,11 @@ class ADK(object):
         else:
             self.load_func = None
         if len(apply_args) > 2 or len(apply_args) == 0:
-            raise Exception("apply function may have between 1 and 2 parameters, not {}".format(len(apply_args)))
+            raise Exception(
+                "apply function may have between 1 and 2 parameters, not {}".format(
+                    len(apply_args)
+                )
+            )
         self.apply_func = apply_func
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
@@ -38,16 +39,16 @@ class ADK(object):
         if self.is_local:
             print("loading complete")
         else:
-            print('PIPE_INIT_COMPLETE')
+            print("PIPE_INIT_COMPLETE")
             sys.stdout.flush()
 
     def format_data(self, request):
-        if request['content_type'] in ['text', 'json']:
-            data = request['data']
-        elif request['content_type'] == 'binary':
-            data = self.wrap_binary_data(request['data'])
+        if request["content_type"] in ["text", "json"]:
+            data = request["data"]
+        elif request["content_type"] == "binary":
+            data = self.wrap_binary_data(request["data"])
         else:
-            raise Exception("Invalid content_type: {}".format(request['content_type']))
+            raise Exception("Invalid content_type: {}".format(request["content_type"]))
         return data
 
     def is_binary(self, arg):
@@ -64,20 +65,19 @@ class ADK(object):
 
     def format_response(self, response):
         if self.is_binary(response):
-            content_type = 'binary'
+            content_type = "binary"
             response = base64.b64encode(response)
             if not isinstance(response, six.string_types):
-                response = str(response, 'utf-8')
-        elif isinstance(response, six.string_types) or isinstance(response, six.text_type):
-            content_type = 'text'
+                response = str(response, "utf-8")
+        elif isinstance(response, six.string_types) or isinstance(
+            response, six.text_type
+        ):
+            content_type = "text"
         else:
-            content_type = 'json'
-        response_string = json.dumps({
-            'result': response,
-            'metadata': {
-                'content_type': content_type
-            }
-        })
+            content_type = "json"
+        response_string = json.dumps(
+            {"result": response, "metadata": {"content_type": content_type}}
+        )
         return response_string
 
     def write_to_pipe(self, payload):
@@ -88,23 +88,23 @@ class ADK(object):
                 print(payload)
         else:
             if os.name == "posix":
-                with open(self.FIFO_PATH, 'w') as f:
+                with open(self.FIFO_PATH, "w") as f:
                     f.write(payload)
-                    f.write('\n')
+                    f.write("\n")
                 sys.stdout.flush()
             if os.name == "nt":
                 sys.stdin = payload
 
     def create_exception(self, exception):
-        if hasattr(exception, 'error_type'):
+        if hasattr(exception, "error_type"):
             error_type = exception.error_type
         else:
-            error_type = 'AlgorithmError'
+            error_type = "AlgorithmError"
         response = {
-            'error': {
-                'message': str(exception),
-                'stacktrace': traceback.format_exc(),
-                'error_type': error_type
+            "error": {
+                "message": str(exception),
+                "stacktrace": traceback.format_exc(),
+                "error_type": error_type,
             }
         }
         return response
