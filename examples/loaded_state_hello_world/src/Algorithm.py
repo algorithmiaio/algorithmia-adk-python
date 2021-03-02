@@ -15,7 +15,7 @@ def load():
     # The return object from this function can be passed directly as input to your apply function.
     # A great example would be any model files that need to be available to this algorithm
     # during runtime.
-    # Any variables returned here, will be passed as the secondary argument to your 'algorithm' function
+    # Any variables returned here, will be passed as the secondary argument to your 'apply' function
 
     return "Loading has been completed."
 
