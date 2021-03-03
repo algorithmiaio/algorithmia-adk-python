@@ -216,10 +216,52 @@ algorithm.init({"data": "https://i.imgur.com/bXdORXl.jpeg"})
 
 ```
 
-### Readme publishing
+## Readme publishing
 To compile the template readme, please check out [embedme](https://github.com/zakhenry/embedme) utility
 and run the following:
 ```commandline
 npm install -g npx
 npx embedme --stdout README_template.md > README.md
 ```
+
+## To publish a new version 
+Publishing should be automatic on new releases, but if you wish to publish manually this is the process
+first make sure to update the version in [setup.py](setup.py)
+Then go through the following
+Then, install these python dependencies
+```commandline
+pip install wheel==0.33
+pip install setuptools==41.6
+pip install twine==1.15
+```
+
+Setup your ~/.pypirc file:
+```commandline
+index-servers =
+  pypi
+  pypitest
+
+[pypi]
+repository: https://upload.pypi.org/legacy/
+username: algorithmia
+password: {{...}}
+
+[pypitest]
+repository: https://test.pypi.org/legacy/
+username: algorithmia
+password: {{...}}
+```
+The passwords (and the pypirc file itself) can be found in our devtools service
+Make sure to update your setup.py with the new version before compiling.
+Also make sure that this is created on Linux and not any other platform.
+Compile via setup.py:
+```commandline
+python setup.py sdist bdist_wheel --universal
+python -m twine upload -r pypitest dist/*
+
+```
+Verify that it works on pytest, then:
+```commandline
+python -m twine upload -r pypi dist/*
+```
+and you're done :)
