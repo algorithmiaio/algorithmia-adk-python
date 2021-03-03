@@ -125,7 +125,7 @@ class ADK(object):
             finally:
                 self.write_to_pipe(response_obj)
 
-    def serve(self, local_payload=None):
+    def init(self, local_payload=None):
         try:
             if self.load_func:
                 self.load()

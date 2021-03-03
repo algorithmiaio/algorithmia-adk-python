@@ -1,4 +1,4 @@
-from adk import ADK
+from Algorithmia import ADK
 
 
 # API calls will begin at the apply() method, with the request body passed as 'input'
@@ -22,7 +22,7 @@ def load():
 
 # This turns your library code into an algorithm that can run on the platform.
 # If you intend to use loading operations, remember to pass a `load` function as a second variable.
-algo = ADK(apply, load)
+algorithm = ADK(apply, load)
 # The 'serve()' function actually starts the algorithm, you can follow along in the source code
 # to see how everything works.
-algo.serve("Algorithmia")
+algorithm.init("Algorithmia")

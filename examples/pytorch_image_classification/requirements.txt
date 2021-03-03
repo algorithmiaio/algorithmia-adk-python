@@ -1,5 +1,4 @@
 algorithmia>=1.7,<2
-algorithmia-adk
 six
 Pillow==8.1.0
 torch==1.6.0
