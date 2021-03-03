@@ -2,6 +2,7 @@ name: deploy-to-pypi
 
 on:
   release:
+    types: [published]
 
 jobs:
   release:
