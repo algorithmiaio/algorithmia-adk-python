@@ -1,11 +1,10 @@
-import Algorithmia
-from adk import ADK
+from Algorithmia import client, ADK
 import torch
 from PIL import Image
 import json
 from torchvision import models, transforms
 
-CLIENT = Algorithmia.client()
+CLIENT = client()
 SMID_ALGO = "algo://util/SmartImageDownloader/0.2.x"
 LABEL_PATH = "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json"
 MODEL_PATHS = {
@@ -42,9 +41,9 @@ def get_image(image_url):
     return img_data
 
 
-def infer_image(image_url, n, state):
-    model = state['model']
-    labels = state['labels']
+def infer_image(image_url, n, globals):
+    model = globals['model']
+    labels = globals['labels']
     image_data = get_image(image_url)
     transformed = transforms.Compose([
         transforms.ToTensor(),
@@ -64,11 +63,11 @@ def infer_image(image_url, n, state):
 
 
 def load():
-    output = {'model': load_model("squeezenet"), 'labels': load_labels()}
-    return output
+    globals = {'model': load_model("squeezenet"), 'labels': load_labels()}
+    return globals
 
 
-def apply(input, state):
+def apply(input, globals):
     if isinstance(input, dict):
         if "n" in input:
             n = input['n']
@@ -76,10 +75,10 @@ def apply(input, state):
             n = 3
         if "data" in input:
             if isinstance(input['data'], str):
-                output = infer_image(input['data'], n, state)
+                output = infer_image(input['data'], n, globals)
             elif isinstance(input['data'], list):
                 for row in input['data']:
-                    row['predictions'] = infer_image(row['image_url'], n, state)
+                    row['predictions'] = infer_image(row['image_url'], n, globals)
                 output = input['data']
             else:
                 raise Exception("'data' must be a image url or a list of image urls (with labels)")
@@ -90,5 +89,5 @@ def apply(input, state):
         raise Exception('input must be a json object')
 
 
-algo = ADK(apply_func=apply, load_func=load)
-algo.serve({"data": "https://i.imgur.com/bXdORXl.jpeg"})
+algorithm = ADK(apply_func=apply, load_func=load)
+algorithm.init({"data": "https://i.imgur.com/bXdORXl.jpeg"})

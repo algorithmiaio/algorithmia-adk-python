@@ -1,11 +1,11 @@
 name: deploy-to-pypi
 
 on:
-  push:
-    branches: [release]
+  release:
+    types: [published]
 
 jobs:
-  build:
+  release:
 
     runs-on: ubuntu-latest
     steps:
@@ -15,13 +15,15 @@ jobs:
       with:
           python-version: '3.7.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
-    - name: compile
+    - name: prepare
       run: |
-        pip3 install wheel
-        python3 setup.py bdist_wheel --universal
-    - name: Publish a Python distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: ${{secrets.PYPI_API_USERNAME}}
-        password: ${{ secrets.PYPI_API_PASSWORD }}
-        verbose: true
+        python -m pip install --upgrade pip
+        pip install wheel twine setuptools
+    - name: Package and Upload
+      env:
+        ADK_VERSION: ${{github.event.release.tag_name }}
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{secrets.TWINE_TOKEN }}
+      run: |
+        python3 setup.py sdist bdist_wheel --universal
+        twine upload -r pypi dist/*
