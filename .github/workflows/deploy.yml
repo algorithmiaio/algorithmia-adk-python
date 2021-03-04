@@ -1,8 +1,9 @@
 name: deploy-to-pypi
 
 on:
-  releases:
-    types: [released]
+  release:
+    types: [published]
+
 jobs:
   release:
 
@@ -21,8 +22,8 @@ jobs:
     - name: Package and Upload
       env:
         ADK_VERSION: ${{github.event.release.tag_name }}
-        TWINE_USERNAME: ${{secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{secrets.PYPI_PASSWORD }}
-    - run: |
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{secrets.TWINE_TOKEN }}
+      run: |
         python3 setup.py sdist bdist_wheel --universal
         twine upload -r pypi dist/*
