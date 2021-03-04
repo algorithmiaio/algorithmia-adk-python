@@ -41,9 +41,9 @@ def get_image(image_url):
     return img_data
 
 
-def infer_image(image_url, n, state):
-    model = state['model']
-    labels = state['labels']
+def infer_image(image_url, n, globals):
+    model = globals['model']
+    labels = globals['labels']
     image_data = get_image(image_url)
     transformed = transforms.Compose([
         transforms.ToTensor(),
@@ -63,11 +63,11 @@ def infer_image(image_url, n, state):
 
 
 def load():
-    output = {'model': load_model("squeezenet"), 'labels': load_labels()}
-    return output
+    globals = {'model': load_model("squeezenet"), 'labels': load_labels()}
+    return globals
 
 
-def apply(input, state):
+def apply(input, globals):
     if isinstance(input, dict):
         if "n" in input:
             n = input['n']
@@ -75,10 +75,10 @@ def apply(input, state):
             n = 3
         if "data" in input:
             if isinstance(input['data'], str):
-                output = infer_image(input['data'], n, state)
+                output = infer_image(input['data'], n, globals)
             elif isinstance(input['data'], list):
                 for row in input['data']:
-                    row['predictions'] = infer_image(row['image_url'], n, state)
+                    row['predictions'] = infer_image(row['image_url'], n, globals)
                 output = input['data']
             else:
                 raise Exception("'data' must be a image url or a list of image urls (with labels)")

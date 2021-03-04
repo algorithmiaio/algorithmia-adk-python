@@ -125,7 +125,7 @@ class ADK(object):
             finally:
                 self.write_to_pipe(response_obj)
 
-    def init(self, local_payload=None):
+    def init(self, local_payload=None, pprint=print):
         try:
             if self.load_func:
                 self.load()
@@ -137,7 +137,7 @@ class ADK(object):
                 apply_result = self.apply_func(local_payload, self.load_result)
             else:
                 apply_result = self.apply_func(local_payload)
-            print(self.format_response(apply_result))
+            pprint(self.format_response(apply_result))
 
         else:
             self.process_loop()

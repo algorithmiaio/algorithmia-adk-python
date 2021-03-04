@@ -6,7 +6,7 @@ from Algorithmia import ADK
 
 def apply(input):
     # If your apply function uses state that's loaded into memory via load, you can pass that loaded state to your apply
-    # function by defining an additional "state" parameter in your apply function; but it's optional!
+    # function by defining an additional "globals" parameter in your apply function; but it's optional!
     return "hello {}".format(str(input))
 
 

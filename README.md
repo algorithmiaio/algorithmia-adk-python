@@ -10,7 +10,7 @@ from Algorithmia import ADK
 
 def apply(input):
     # If your apply function uses state that's loaded into memory via load, you can pass that loaded state to your apply
-    # function by defining an additional "state" parameter in your apply function; but it's optional!
+    # function by defining an additional "globals" parameter in your apply function; but it's optional!
     return "hello {}".format(str(input))
 
 
@@ -71,7 +71,7 @@ from Algorithmia import ADK
 
 def apply(input):
     # If your apply function uses state that's loaded into memory via load, you can pass that loaded state to your apply
-    # function by defining an additional "state" parameter in your apply function; but it's optional!
+    # function by defining an additional "globals" parameter in your apply function; but it's optional!
     return "hello {}".format(str(input))
 
 
@@ -93,10 +93,10 @@ from Algorithmia import ADK
 # API calls will begin at the apply() method, with the request body passed as 'input'
 # For more details, see algorithmia.com/developers/algorithm-development/languages
 
-def apply(input, state):
+def apply(input, globals):
     # If your apply function uses state that's loaded into memory via load, you can pass that loaded state to your apply
-    # function by defining an additional "state" parameter in your apply function.
-    return "hello {} {}".format(str(input), str(state))
+    # function by defining an additional "globals" parameter in your apply function.
+    return "hello {} {}".format(str(input), str(globals['payload']))
 
 
 def load():
@@ -105,14 +105,15 @@ def load():
     # A great example would be any model files that need to be available to this algorithm
     # during runtime.
     # Any variables returned here, will be passed as the secondary argument to your 'algorithm' function
-
-    return "Loading has been completed."
+    globals = {}
+    globals['payload'] = "Loading has been completed."
+    return globals
 
 
 # This turns your library code into an algorithm that can run on the platform.
 # If you intend to use loading operations, remember to pass a `load` function as a second variable.
 algorithm = ADK(apply, load)
-# The 'serve()' function actually starts the algorithm, you can follow along in the source code
+# The 'init()' function actually starts the algorithm, you can follow along in the source code
 # to see how everything works.
 algorithm.init("Algorithmia")
 
@@ -163,9 +164,9 @@ def get_image(image_url):
     return img_data
 
 
-def infer_image(image_url, n, state):
-    model = state['model']
-    labels = state['labels']
+def infer_image(image_url, n, globals):
+    model = globals['model']
+    labels = globals['labels']
     image_data = get_image(image_url)
     transformed = transforms.Compose([
         transforms.ToTensor(),
@@ -185,11 +186,11 @@ def infer_image(image_url, n, state):
 
 
 def load():
-    output = {'model': load_model("squeezenet"), 'labels': load_labels()}
-    return output
+    globals = {'model': load_model("squeezenet"), 'labels': load_labels()}
+    return globals
 
 
-def apply(input, state):
+def apply(input, globals):
     if isinstance(input, dict):
         if "n" in input:
             n = input['n']
@@ -197,10 +198,10 @@ def apply(input, state):
             n = 3
         if "data" in input:
             if isinstance(input['data'], str):
-                output = infer_image(input['data'], n, state)
+                output = infer_image(input['data'], n, globals)
             elif isinstance(input['data'], list):
                 for row in input['data']:
-                    row['predictions'] = infer_image(row['image_url'], n, state)
+                    row['predictions'] = infer_image(row['image_url'], n, globals)
                 output = input['data']
             else:
                 raise Exception("'data' must be a image url or a list of image urls (with labels)")
