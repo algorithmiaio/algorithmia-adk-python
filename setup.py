@@ -6,7 +6,8 @@ setup(
     name='algorithmia-adk',
     version=os.environ.get('ADK_VERSION', '0.0.0'),
     description='Algorithmia Python ADK client',
-    long_description='Algorithm Development Kit code used for creating Python algorithms on adk. Built into the Algorithmia client',
+    long_description='Algorithm Development Kit code used for creating Python algorithms on Algorithmia. '
+                     'Used by the Algorithmia client',
     url='http://github.com/algorithmiaio/algorithmia-adk-python',
     license='MIT',
     author='Algorithmia',
