@@ -25,11 +25,7 @@ class ADK(object):
         else:
             self.load_func = None
         if len(apply_args) > 2 or len(apply_args) == 0:
-            raise Exception(
-                "apply function may have between 1 and 2 parameters, not {}".format(
-                    len(apply_args)
-                )
-            )
+            raise Exception("apply function may have between 1 and 2 parameters, not {}".format(len(apply_args)))
         self.apply_func = apply_func
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
@@ -67,14 +63,17 @@ class ADK(object):
         if self.is_binary(response):
             content_type = "binary"
             response = str(base64.b64encode(response), "utf-8")
-        elif isinstance(response, six.string_types) or isinstance(
-            response, six.text_type
-        ):
+        elif isinstance(response, six.string_types) or isinstance(response, six.text_type):
             content_type = "text"
         else:
             content_type = "json"
         response_string = json.dumps(
-            {"result": response, "metadata": {"content_type": content_type}}
+            {
+                "result": response,
+                "metadata": {
+                    "content_type": content_type
+                }
+            }
         )
         return response_string
 
