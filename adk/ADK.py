@@ -97,13 +97,13 @@ class ADK(object):
             error_type = exception.error_type
         else:
             error_type = "AlgorithmError"
-        response = {
+        response = json.dumps({
             "error": {
                 "message": str(exception),
                 "stacktrace": traceback.format_exc(),
                 "error_type": error_type,
             }
-        }
+        })
         return response
 
     def process_loop(self):
@@ -122,19 +122,30 @@ class ADK(object):
             finally:
                 self.write_to_pipe(response_obj)
 
-    def init(self, local_payload=None, pprint=print):
+    def process_local(self, local_payload, pprint):
+        if self.load_result:
+            apply_result = self.apply_func(local_payload, self.load_result)
+        else:
+            apply_result = self.apply_func(local_payload)
+        pprint(self.format_response(apply_result))
+
+    def loading_process(self, pprint):
         try:
             if self.load_func:
                 self.load()
+            return True
         except Exception as e:
             load_error = self.create_exception(e)
-            self.write_to_pipe(load_error)
-        if self.is_local and local_payload:
-            if self.load_result:
-                apply_result = self.apply_func(local_payload, self.load_result)
+            if self.is_local:
+                pprint(load_error)
             else:
-                apply_result = self.apply_func(local_payload)
-            pprint(self.format_response(apply_result))
+                self.write_to_pipe(load_error)
+            return False
 
-        else:
-            self.process_loop()
+    def init(self, local_payload=None, pprint=print):
+        loading_result = self.loading_process(pprint)
+        if loading_result:
+            if self.is_local and local_payload:
+                self.process_local(local_payload, pprint)
+            else:
+                self.process_loop()
