@@ -18,6 +18,8 @@ jobs:
           python-version: '3.7.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
     - name: continous integration
+      env:
+        ALGORITHMIA_API_KEY: ${{ secrets.PROD_API_KEY }}
       run : |
         pip install -r requirements.txt
         python run_tests.py
