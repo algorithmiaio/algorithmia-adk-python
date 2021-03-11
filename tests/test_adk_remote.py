@@ -3,7 +3,7 @@ import json
 import unittest
 import os
 from adk import ADK
-from adk_algorithms import *
+from tests.adk_algorithms import *
 
 
 class RemoteTest(unittest.TestCase):
@@ -98,7 +98,8 @@ class RemoteTest(unittest.TestCase):
             {
                 'content_type': 'json'
             },
-            'result': {'message': 'This message was loaded prior to runtime'}
+            # 'result': {'message': 'This message was loaded prior to runtime'}
+            'result': {'message': 'Not true'}
         }
         input = [str(json.dumps(input))]
         actual_output = self.execute_example(input, apply_input_or_context, loading_text)
@@ -135,5 +136,5 @@ class RemoteTest(unittest.TestCase):
         self.assertEqual(expected_output, actual_output)
 
 
-if __name__ == '__main__':
+def run_test():
     unittest.main()

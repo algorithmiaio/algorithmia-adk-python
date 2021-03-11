@@ -1,13 +1,13 @@
-import sys
 import json
 import os
 import unittest
 from adk import ADK
-from adk_algorithms import *
+from tests.adk_algorithms import *
 
 
 class LocalTest(unittest.TestCase):
     fifo_pipe_path = "/tmp/algoout"
+
     def setUp(self):
         try:
             os.remove(self.fifo_pipe_path)
@@ -25,7 +25,6 @@ class LocalTest(unittest.TestCase):
         output = []
         algo.init(input, pprint=lambda x: output.append(x))
         return output[0]
-
 
     def test_basic(self):
         input = 'Algorithmia'
@@ -48,7 +47,6 @@ class LocalTest(unittest.TestCase):
         }
         actual_output = json.loads(self.execute_without_load(input, apply_basic))
         self.assertEqual(expected_output, actual_output)
-
 
     def test_algorithm_loading_basic(self):
         input = "ignore me"
@@ -89,5 +87,6 @@ class LocalTest(unittest.TestCase):
         actual_output["error"]["stacktrace"] = ''
         self.assertEqual(expected_output, actual_output)
 
-if __name__ == '__main__':
+
+def run_test():
     unittest.main()
