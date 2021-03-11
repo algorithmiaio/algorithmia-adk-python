@@ -19,6 +19,7 @@ jobs:
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
     - name: continous integration
       run : |
+        pip install six
         python run_tests.py
     - name: prepare
       run: |
