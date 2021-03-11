@@ -98,8 +98,7 @@ class RemoteTest(unittest.TestCase):
             {
                 'content_type': 'json'
             },
-            # 'result': {'message': 'This message was loaded prior to runtime'}
-            'result': {'message': 'Not true'}
+            'result': {'message': 'This message was loaded prior to runtime'}
         }
         input = [str(json.dumps(input))]
         actual_output = self.execute_example(input, apply_input_or_context, loading_text)
