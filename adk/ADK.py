@@ -31,7 +31,8 @@ class ADK(object):
         self.load_result = None
 
     def load(self):
-        self.load_result = self.load_func()
+        if self.load_func:
+            self.load_result = self.load_func()
         if self.is_local:
             print("loading complete")
         else:
@@ -131,8 +132,7 @@ class ADK(object):
 
     def loading_process(self, pprint):
         try:
-            if self.load_func:
-                self.load()
+            self.load()
             return True
         except Exception as e:
             load_error = self.create_exception(e)
