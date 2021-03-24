@@ -29,15 +29,20 @@ class ADK(object):
         self.apply_func = apply_func
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
+        self.loading_exception = None
 
     def load(self):
-        if self.load_func:
-            self.load_result = self.load_func()
-        if self.is_local:
-            print("loading complete")
-        else:
-            print("PIPE_INIT_COMPLETE")
-            sys.stdout.flush()
+        try:
+            if self.load_func:
+                self.load_result = self.load_func()
+        except Exception as e:
+            self.loading_exception = e
+        finally:
+            if self.is_local:
+                print("loading complete")
+            else:
+                print("PIPE_INIT_COMPLETE")
+                sys.stdout.flush()
 
     def format_data(self, request):
         if request["content_type"] in ["text", "json"]:
@@ -78,12 +83,12 @@ class ADK(object):
         )
         return response_string
 
-    def write_to_pipe(self, payload):
+    def write_to_pipe(self, payload, pprint=print):
         if self.is_local:
             if isinstance(payload, dict):
                 raise Exception(payload)
             else:
-                print(payload)
+                pprint(payload)
         else:
             if os.name == "posix":
                 with open(self.FIFO_PATH, "w") as f:
@@ -130,22 +135,13 @@ class ADK(object):
             apply_result = self.apply_func(local_payload)
         pprint(self.format_response(apply_result))
 
-    def loading_process(self, pprint):
-        try:
-            self.load()
-            return True
-        except Exception as e:
-            load_error = self.create_exception(e)
-            if self.is_local:
-                pprint(load_error)
-            else:
-                self.write_to_pipe(load_error)
-            return False
 
     def init(self, local_payload=None, pprint=print):
-        loading_result = self.loading_process(pprint)
-        if loading_result:
-            if self.is_local and local_payload:
-                self.process_local(local_payload, pprint)
-            else:
-                self.process_loop()
+        self.load()
+        if self.loading_exception:
+            load_error = self.create_exception(self.loading_exception)
+            self.write_to_pipe(load_error, pprint=pprint)
+        elif self.is_local and local_payload:
+            self.process_local(local_payload, pprint)
+        else:
+            self.process_loop()
