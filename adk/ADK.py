@@ -4,7 +4,6 @@ import json
 import os
 import sys
 import traceback
-
 import six
 
 
@@ -98,9 +97,11 @@ class ADK(object):
             if os.name == "nt":
                 sys.stdin = payload
 
-    def create_exception(self, exception):
+    def create_exception(self, exception, loading_exception=False):
         if hasattr(exception, "error_type"):
             error_type = exception.error_type
+        elif loading_exception:
+            error_type = "LoadingError"
         else:
             error_type = "AlgorithmError"
         response = json.dumps({
@@ -135,11 +136,10 @@ class ADK(object):
             apply_result = self.apply_func(local_payload)
         pprint(self.format_response(apply_result))
 
-
     def init(self, local_payload=None, pprint=print):
         self.load()
         if self.loading_exception:
-            load_error = self.create_exception(self.loading_exception)
+            load_error = self.create_exception(self.loading_exception, loading_exception=True)
             self.write_to_pipe(load_error, pprint=pprint)
         elif self.is_local and local_payload:
             self.process_local(local_payload, pprint)
