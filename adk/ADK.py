@@ -23,7 +23,8 @@ class ADK(object):
             self.load_func = load_func
         else:
             self.load_func = None
-        if len(apply_args) > 2 or len(apply_args) == 0:
+        self.apply_arity = len(apply_args)
+        if self.apply_arity > 2 or len(apply_args) == 0:
             raise Exception("apply function may have between 1 and 2 parameters, not {}".format(len(apply_args)))
         self.apply_func = apply_func
         self.is_local = not os.path.exists(self.FIFO_PATH)
@@ -119,7 +120,7 @@ class ADK(object):
             try:
                 request = json.loads(line)
                 formatted_input = self.format_data(request)
-                if self.load_result:
+                if self.load_result and self.apply_arity > 1:
                     apply_result = self.apply_func(formatted_input, self.load_result)
                 else:
                     apply_result = self.apply_func(formatted_input)
