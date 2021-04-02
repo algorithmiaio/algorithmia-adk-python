@@ -43,6 +43,18 @@ class ADK(object):
                 print("PIPE_INIT_COMPLETE")
                 sys.stdout.flush()
 
+    def apply(self, payload):
+        try:
+            if self.load_result:
+                apply_result = self.apply_func(payload, self.load_result)
+            else:
+                apply_result = self.apply_func(payload)
+            response_obj = self.format_response(apply_result)
+            return response_obj
+        except Exception as e:
+            response_obj = self.create_exception(e)
+            return response_obj
+
     def format_data(self, request):
         if request["content_type"] in ["text", "json"]:
             data = request["data"]
@@ -114,27 +126,15 @@ class ADK(object):
         return response
 
     def process_loop(self):
-        response_obj = ""
         for line in sys.stdin:
-            try:
-                request = json.loads(line)
-                formatted_input = self.format_data(request)
-                if self.load_result:
-                    apply_result = self.apply_func(formatted_input, self.load_result)
-                else:
-                    apply_result = self.apply_func(formatted_input)
-                response_obj = self.format_response(apply_result)
-            except Exception as e:
-                response_obj = self.create_exception(e)
-            finally:
-                self.write_to_pipe(response_obj)
+            request = json.loads(line)
+            formatted_input = self.format_data(request)
+            result = self.apply(formatted_input)
+            self.write_to_pipe(result)
 
     def process_local(self, local_payload, pprint):
-        if self.load_result:
-            apply_result = self.apply_func(local_payload, self.load_result)
-        else:
-            apply_result = self.apply_func(local_payload)
-        pprint(self.format_response(apply_result))
+        result = self.apply(local_payload)
+        self.write_to_pipe(result, pprint=pprint)
 
     def init(self, local_payload=None, pprint=print):
         self.load()

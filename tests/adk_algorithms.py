@@ -1,10 +1,14 @@
 import Algorithmia
-
+import base64
 
 # -- Apply functions --- #
 def apply_basic(input):
     return "hello " + input
 
+def apply_binary(input):
+    if isinstance(input, bytes):
+        input = input.decode('utf8')
+    return bytes("hello " + input, encoding='utf8')
 
 def apply_input_or_context(input, globals=None):
     if isinstance(globals, dict):
