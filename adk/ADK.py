@@ -23,8 +23,7 @@ class ADK(object):
             self.load_func = load_func
         else:
             self.load_func = None
-        self.apply_arity = len(apply_args)
-        if self.apply_arity > 2 or len(apply_args) == 0:
+        if len(apply_args) > 2 or len(apply_args) == 0:
             raise Exception("apply function may have between 1 and 2 parameters, not {}".format(len(apply_args)))
         self.apply_func = apply_func
         self.is_local = not os.path.exists(self.FIFO_PATH)
@@ -48,7 +47,7 @@ class ADK(object):
         if request["content_type"] in ["text", "json"]:
             data = request["data"]
         elif request["content_type"] == "binary":
-            data = self.wrap_binary_data(request["data"])
+            data = self.wrap_binary_data(base64.b64decode(request["data"]))
         else:
             raise Exception("Invalid content_type: {}".format(request["content_type"]))
         return data
@@ -120,7 +119,7 @@ class ADK(object):
             try:
                 request = json.loads(line)
                 formatted_input = self.format_data(request)
-                if self.load_result and self.apply_arity > 1:
+                if self.load_result:
                     apply_result = self.apply_func(formatted_input, self.load_result)
                 else:
                     apply_result = self.apply_func(formatted_input)
