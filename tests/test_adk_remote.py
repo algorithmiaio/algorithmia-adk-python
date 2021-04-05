@@ -3,6 +3,7 @@ import json
 import unittest
 import os
 from adk import ADK
+import base64
 from tests.adk_algorithms import *
 
 
@@ -123,7 +124,7 @@ class RemoteTest(unittest.TestCase):
         input = {'content_type': 'json', 'data': 'Algorithmia'}
         expected_output = {'error':
                                {'message': 'This exception was thrown in loading',
-                                'error_type': 'AlgorithmError',
+                                'error_type': 'LoadingError',
                                 'stacktrace': ''
                                 }
                            }
@@ -132,6 +133,31 @@ class RemoteTest(unittest.TestCase):
         # beacuse the stacktrace is local path specific,
         # we're going to assume it's setup correctly and remove it from our equality check
         actual_output["error"]["stacktrace"] = ''
+        self.assertEqual(expected_output, actual_output)
+
+    def test_error_binary_data(self):
+        input = {"content_type": "binary", "data": "cGF5bG9hZA=="}
+        expected_output = {'error':
+                               {'message': 'can only concatenate str (not "bytes") to str',
+                                'error_type': 'AlgorithmError',
+                                'stacktrace': ''
+                                }
+                           }
+        input = [str(json.dumps(input))]
+        actual_output = self.execute_without_load(input, apply_basic)
+        actual_output["error"]["stacktrace"] = ''
+        self.assertEqual(expected_output, actual_output)
+
+    def test_binary_data(self):
+        input = {"content_type": "binary", "data": "cGF5bG9hZA=="}
+        expected_output = {'metadata':
+            {
+                'content_type': 'binary'
+            },
+            'result': "aGVsbG8gcGF5bG9hZA=="
+        }
+        input = [str(json.dumps(input))]
+        actual_output = self.execute_without_load(input, apply_binary)
         self.assertEqual(expected_output, actual_output)
 
 
