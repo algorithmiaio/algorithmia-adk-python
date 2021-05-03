@@ -122,7 +122,8 @@ algorithm.init("Algorithmia")
 ## [pytorch based image classification](examples/pytorch_image_classification)
 <!-- embedme examples/pytorch_image_classification/src/Algorithm.py -->
 ```python
-from Algorithmia import client, ADK
+from Algorithmia import ADK
+import Algorithmia
 import torch
 from PIL import Image
 import json
@@ -136,14 +137,10 @@ def load_labels(label_path, client):
     return labels
 
 
-def load_model(name, model_paths, client):
-    if name == "squeezenet":
-        model = models.squeezenet1_1()
-        models.densenet121()
-        weights = torch.load(client.file(model_paths["squeezenet"]).getFile().name)
-    else:
-        model = models.alexnet()
-        weights = torch.load(client.file(model_paths["alexnet"]).getFile().name)
+def load_model(model_paths, client):
+    model = models.squeezenet1_1()
+    local_file = client.file(model_paths["filepath"]).getFile().name
+    weights = torch.load(local_file)
     model.load_state_dict(weights)
     return model.float().eval()
 
@@ -177,17 +174,13 @@ def infer_image(image_url, n, globals):
     return result
 
 
-def load():
+def load(manifest):
+
     globals = {}
-    globals["MODEL_PATHS"] = {
-        "squeezenet": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
-        "alexnet": "data://AlgorithmiaSE/image_cassification_demo/alexnet-owt-4df8aa71.pth",
-    }
-    globals["LABEL_PATHS"] = "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json"
-    globals["CLIENT"] = client()
+    client = Algorithmia.client()
     globals["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
-    globals["model"] = load_model("squeezenet", globals["MODEL_PATHS"], globals["CLIENT"])
-    globals["labels"] = load_labels(globals["LABEL_PATHS"], globals["CLIENT"])
+    globals["model"] = load_model(manifest["squeezenet"], client)
+    globals["labels"] = load_labels(manifest["label_file"], client)
     return globals
 
 
@@ -205,10 +198,10 @@ def apply(input, globals):
                     row["predictions"] = infer_image(row["image_url"], n, globals)
                 output = input["data"]
             else:
-                raise Exception(""data" must be a image url or a list of image urls (with labels)")
+                raise Exception("\"data\" must be a image url or a list of image urls (with labels)")
             return output
         else:
-            raise Exception(""data" must be defined")
+            raise Exception("\"data\" must be defined")
     else:
         raise Exception("input must be a json object")
 
