@@ -125,24 +125,21 @@ class ADK(object):
         })
         return response
 
-    def process_loop(self):
-        for line in sys.stdin:
-            request = json.loads(line)
-            formatted_input = self.format_data(request)
-            result = self.apply(formatted_input)
-            self.write_to_pipe(result)
-
     def process_local(self, local_payload, pprint):
         result = self.apply(local_payload)
         self.write_to_pipe(result, pprint=pprint)
 
     def init(self, local_payload=None, pprint=print):
-        while True:
             self.load()
-            if self.loading_exception:
-                load_error = self.create_exception(self.loading_exception, loading_exception=True)
-                self.write_to_pipe(load_error, pprint=pprint)
-            elif self.is_local and local_payload:
+            if self.is_local and local_payload:
                 self.process_local(local_payload, pprint)
             else:
-                self.process_loop()
+                for line in sys.stdin:
+                    request = json.loads(line)
+                    if self.loading_exception:
+                        load_error = self.create_exception(self.loading_exception, loading_exception=True)
+                        self.write_to_pipe(load_error, pprint=pprint)
+                        formatted_input = self.format_data(request)
+                    else:
+                        result = self.apply(formatted_input)
+                        self.write_to_pipe(result)
