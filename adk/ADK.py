@@ -137,11 +137,12 @@ class ADK(object):
         self.write_to_pipe(result, pprint=pprint)
 
     def init(self, local_payload=None, pprint=print):
-        self.load()
-        if self.loading_exception:
-            load_error = self.create_exception(self.loading_exception, loading_exception=True)
-            self.write_to_pipe(load_error, pprint=pprint)
-        elif self.is_local and local_payload:
-            self.process_local(local_payload, pprint)
-        else:
-            self.process_loop()
+        while True:
+            self.load()
+            if self.loading_exception:
+                load_error = self.create_exception(self.loading_exception, loading_exception=True)
+                self.write_to_pipe(load_error, pprint=pprint)
+            elif self.is_local and local_payload:
+                self.process_local(local_payload, pprint)
+            else:
+                self.process_loop()
