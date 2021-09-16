@@ -136,10 +136,10 @@ class ADK(object):
             else:
                 for line in sys.stdin:
                     request = json.loads(line)
+                    formatted_input = self.format_data(request)
                     if self.loading_exception:
                         load_error = self.create_exception(self.loading_exception, loading_exception=True)
                         self.write_to_pipe(load_error, pprint=pprint)
-                        formatted_input = self.format_data(request)
                     else:
                         result = self.apply(formatted_input)
                         self.write_to_pipe(result)
