@@ -1,9 +1,13 @@
 from Algorithmia import ADK
 import Algorithmia
+from Algorithmia.errors import AlgorithmException
 import torch
 from PIL import Image
 import json
 from torchvision import models, transforms
+
+client = Algorithmia.client()
+
 
 def load_labels(label_path, client):
     local_path = client.file(label_path).getFile().name
@@ -51,13 +55,18 @@ def infer_image(image_url, n, globals):
 
 
 def load(manifest):
-
     globals = {}
-    client = Algorithmia.client()
     globals["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
     globals["model"] = load_model(manifest["squeezenet"], client)
     globals["labels"] = load_labels(manifest["label_file"], client)
     return globals
+
+
+def handle_exceptions(exp):
+    if isinstance(exp, AlgorithmException):
+        client.report_insights({"AlgorithmException": str(exp)})
+    else:
+        client.report_insights({"CriticalException": str(exp)})
 
 
 def apply(input, globals):
@@ -82,5 +91,5 @@ def apply(input, globals):
         raise Exception("input must be a json object")
 
 
-algorithm = ADK(apply_func=apply, load_func=load)
+algorithm = ADK(apply_func=apply, load_func=load, exception_func=handle_exceptions)
 algorithm.init({"data": "https://i.imgur.com/bXdORXl.jpeg"})

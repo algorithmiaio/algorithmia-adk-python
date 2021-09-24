@@ -8,11 +8,12 @@ import six
 
 
 class ADK(object):
-    def __init__(self, apply_func, load_func=None):
+    def __init__(self, apply_func, load_func=None, exception_func=None):
         """
-        Creates the adk object
-        :param apply_func: A required function that can have an arity of 1-2, depending on if loading occurs
-        :param load_func: An optional supplier function used if load time events are required, has an arity of 0.
+        Creates the adk object :param apply_func: A required function that can have an arity of 1-2, depending on if
+        loading occurs :param load_func: An optional supplier function used if load time events are required,
+        has an arity of 0. :param exception_func: An optional supplier function that accepts an Exception for third
+        party reporting, does not return anything.
         """
         self.FIFO_PATH = "/tmp/algoout"
         apply_args, _, _, _, _, _, _ = inspect.getfullargspec(apply_func)
@@ -20,9 +21,18 @@ class ADK(object):
             load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
             if len(load_args) > 0:
                 raise Exception("load function must not have parameters")
-            self.load_func = load_func
+            else:
+                self.load_func = load_func
         else:
             self.load_func = None
+        if exception_func:
+            exception_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
+            if len(exception_args) != 1:
+                raise Exception("load function accept 1 parameter (the exception)")
+            else:
+                self.load_func = load_func
+        else:
+            self.exception_func = None
         if len(apply_args) > 2 or len(apply_args) == 0:
             raise Exception("apply function may have between 1 and 2 parameters, not {}".format(len(apply_args)))
         self.apply_func = apply_func
@@ -129,10 +139,20 @@ class ADK(object):
         result = self.apply(local_payload)
         self.write_to_pipe(result, pprint=pprint)
 
+    def process_algo(self, payload):
+        try:
+            result = self.apply(payload)
+            self.write_to_pipe(result)
+        except Exception as e:
+            self.exception_func(e)
+            raise e
+
+
     def init(self, local_payload=None, pprint=print):
             self.load()
             if self.is_local and local_payload:
                 if self.loading_exception:
+                    self.exception_func(self.loading_exception)
                     load_error = self.create_exception(self.loading_exception, loading_exception=True)
                     self.write_to_pipe(load_error, pprint=pprint)
                 self.process_local(local_payload, pprint)
@@ -141,8 +161,7 @@ class ADK(object):
                     request = json.loads(line)
                     formatted_input = self.format_data(request)
                     if self.loading_exception:
+                        self.exception_func(self.loading_exception)
                         load_error = self.create_exception(self.loading_exception, loading_exception=True)
                         self.write_to_pipe(load_error, pprint=pprint)
-                    else:
-                        result = self.apply(formatted_input)
-                        self.write_to_pipe(result)
+                    self.process_algo(formatted_input)

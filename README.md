@@ -88,7 +88,7 @@ algorithm.init("Algorithmia")
 <!-- embedme examples/loaded_state_hello_world/src/Algorithm.py -->
 ```python
 from Algorithmia import ADK
-
+import Algorithmia
 
 # API calls will begin at the apply() method, with the request body passed as 'input'
 # For more details, see algorithmia.com/developers/algorithm-development/languages
@@ -110,10 +110,19 @@ def load():
     globals['payload'] = "Loading has been completed."
     return globals
 
+def handle_exceptions(exp):
+    # Additionally, if you plan to ship failure or metric information critical to your business to an aggregation
+    # service using Algorithmia insights or a third party solution; it's recommended to implement this function. This
+    # function takes 2 inputs parameters; the exception and  and returns nothing. If any exceptions are detected; you
+    # can process them here. This reduces the need to use built-in try/catch logic, which reduces the chances for
+    # catching the wrong error!
+    client = Algorithmia.client()
+    client.report_insights({"exception": str(exp)})
+
 
 # This turns your library code into an algorithm that can run on the platform.
 # If you intend to use loading operations, remember to pass a `load` function as a second variable.
-algorithm = ADK(apply, load)
+algorithm = ADK(apply, load, handle_exceptions)
 # The 'init()' function actually starts the algorithm, you can follow along in the source code
 # to see how everything works.
 algorithm.init("Algorithmia")
@@ -124,10 +133,14 @@ algorithm.init("Algorithmia")
 ```python
 from Algorithmia import ADK
 import Algorithmia
+from Algorithmia.errors import AlgorithmException
 import torch
 from PIL import Image
 import json
 from torchvision import models, transforms
+
+client = Algorithmia.client()
+
 
 def load_labels(label_path, client):
     local_path = client.file(label_path).getFile().name
@@ -175,13 +188,18 @@ def infer_image(image_url, n, globals):
 
 
 def load(manifest):
-
     globals = {}
-    client = Algorithmia.client()
     globals["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
     globals["model"] = load_model(manifest["squeezenet"], client)
     globals["labels"] = load_labels(manifest["label_file"], client)
     return globals
+
+
+def handle_exceptions(exp):
+    if isinstance(exp, AlgorithmException):
+        client.report_insights({"AlgorithmException": str(exp)})
+    else:
+        client.report_insights({"CriticalException": str(exp)})
 
 
 def apply(input, globals):
@@ -206,7 +224,7 @@ def apply(input, globals):
         raise Exception("input must be a json object")
 
 
-algorithm = ADK(apply_func=apply, load_func=load)
+algorithm = ADK(apply_func=apply, load_func=load, exception_func=handle_exceptions)
 algorithm.init({"data": "https://i.imgur.com/bXdORXl.jpeg"})
 
 ```
