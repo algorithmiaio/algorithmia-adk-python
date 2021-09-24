@@ -55,8 +55,8 @@ def load(manifest):
     globals = {}
     client = Algorithmia.client()
     globals["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
-    globals["model"] = load_model(manifest["squeezenet"], client)
-    globals["labels"] = load_labels(manifest["label_file"], client)
+    globals["model"] = load_model(manifest["model_squeezenet"], client)
+    globals["labels"] = load_labels(manifest["labels"], client)
     return globals
 
 

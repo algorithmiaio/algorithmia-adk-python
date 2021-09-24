@@ -1,14 +1,19 @@
 {
-  "label_file": {
-    "filepath": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
-    "md5_hash": "c2c37ea517e94d9795004a39431a14cb",
-    "origin_ref": "this file came from imagenet.org",
-    "uploaded_utc": "2021-05-03-11:05"
-  },
-    "squeezenet": {
-      "filepath": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
-      "md5_hash": "46a44d32d2c5c07f7f66324bef4c7266",
-      "origin_ref": "From https://download.pytorch.org/models/squeezenet1_1-f364aa15.pth",
-      "uploaded_utc": "2021-05-03-11:05"
+  "algorithm_name": "pytorch_image_classification",
+  "model_versioning": "strict",
+  "required_files" : [
+      { "name": "labels",
+      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
+      "md5_checksum": "c2c37ea517e94d9795004a39431a14cb",
+      "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
     }
+  ],
+  "optional_files": [
+    {
+      "name": "optional_data",
+      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
+      "md5_checksum": "c2c37ea517e94d9795004a39431a14cb",
+      "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+    }
+  ]
 }
