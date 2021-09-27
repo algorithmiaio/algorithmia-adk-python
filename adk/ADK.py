@@ -3,22 +3,24 @@ import json
 import os
 import sys
 from adk.io import create_exception, format_data, format_response
+from adk.manifest import ManifestData
 
 
 class ADK(object):
-    def __init__(self, apply_func, load_func=None):
+    def __init__(self, apply_func, load_func=None, client=None, manifest_path="model_manifest.json.lock"):
         """
         Creates the adk object
         :param apply_func: A required function that can have an arity of 1-2, depending on if loading occurs
         :param load_func: An optional supplier function used if load time events are required, has an arity of 0.
+        :param client: A Algorithmia Client instance that might be user defined, and is used for interacting with a model manifest file; if defined.
         """
         self.FIFO_PATH = "/tmp/algoout"
-        self.manifest_path = "data_manifest.json"
         apply_args, _, _, _, _, _, _ = inspect.getfullargspec(apply_func)
         if load_func:
             load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
-            if len(load_args) > 0:
-                raise Exception("load function must not have parameters")
+            if len(load_args) > 2:
+                raise Exception("load function may either have no parameters, or one parameter providing the manifest "
+                                "state.")
             self.load_func = load_func
         else:
             self.load_func = None
@@ -28,10 +30,14 @@ class ADK(object):
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
         self.loading_exception = None
+        self.manifest = ManifestData(client, manifest_path)
 
     def load(self):
         try:
-            if self.load_func:
+            if self.load_func and self.manifest.available():
+                self.manifest.initialize()
+                self.load_result = self.load_func(self.manifest)
+            elif self.load_func:
                 self.load_result = self.load_func()
         except Exception as e:
             self.loading_exception = e
