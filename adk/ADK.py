@@ -26,11 +26,11 @@ class ADK(object):
         else:
             self.load_func = None
         if exception_func:
-            exception_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
+            exception_args, _, _, _, _, _, _ = inspect.getfullargspec(exception_func)
             if len(exception_args) != 1:
-                raise Exception("load function accept 1 parameter (the exception)")
+                raise Exception("exception function accepts 1 parameter (the exception)")
             else:
-                self.load_func = load_func
+                self.exception_func = exception_func
         else:
             self.exception_func = None
         if len(apply_args) > 2 or len(apply_args) == 0:
@@ -40,12 +40,23 @@ class ADK(object):
         self.load_result = None
         self.loading_exception = None
 
+    def exception(self, exec, load_exception= False):
+        try:
+            if self.exception_func:
+                self.exception_func(exec)
+            response_obj = self.create_exception(exec, load_exception)
+            return response_obj
+        except Exception as e:
+            ex = Exception("Exception handling failed: ", e)
+            response_obj = self.create_exception(ex, load_exception)
+            return response_obj
+
     def load(self):
         try:
             if self.load_func:
                 self.load_result = self.load_func()
         except Exception as e:
-            self.loading_exception = e
+            self.loading_exception = self.exception(e, load_exception=True)
         finally:
             if self.is_local:
                 print("loading complete")
@@ -62,8 +73,8 @@ class ADK(object):
             response_obj = self.format_response(apply_result)
             return response_obj
         except Exception as e:
-            response_obj = self.create_exception(e)
-            return response_obj
+            exception_obj = self.exception(e)
+            return exception_obj
 
     def format_data(self, request):
         if request["content_type"] in ["text", "json"]:
@@ -135,33 +146,26 @@ class ADK(object):
         })
         return response
 
-    def process_local(self, local_payload, pprint):
-        result = self.apply(local_payload)
-        self.write_to_pipe(result, pprint=pprint)
+    def process_local(self, local_payload):
+        return self.apply(local_payload)
 
     def process_algo(self, payload):
-        try:
-            result = self.apply(payload)
-            self.write_to_pipe(result)
-        except Exception as e:
-            self.exception_func(e)
-            raise e
-
+           return self.apply(payload)
 
     def init(self, local_payload=None, pprint=print):
-            self.load()
-            if self.is_local and local_payload:
-                if self.loading_exception:
-                    self.exception_func(self.loading_exception)
-                    load_error = self.create_exception(self.loading_exception, loading_exception=True)
-                    self.write_to_pipe(load_error, pprint=pprint)
-                self.process_local(local_payload, pprint)
+        self.load()
+        if self.is_local and local_payload:
+            if self.loading_exception:
+                self.write_to_pipe(self.loading_exception, pprint)
             else:
-                for line in sys.stdin:
+                response = self.process_local(local_payload)
+                self.write_to_pipe(response, pprint)
+        else:
+            for line in sys.stdin:
+                if self.loading_exception:
+                    self.write_to_pipe(self.loading_exception, pprint)
+                else:
                     request = json.loads(line)
                     formatted_input = self.format_data(request)
-                    if self.loading_exception:
-                        self.exception_func(self.loading_exception)
-                        load_error = self.create_exception(self.loading_exception, loading_exception=True)
-                        self.write_to_pipe(load_error, pprint=pprint)
-                    self.process_algo(formatted_input)
+                    response = self.process_algo(formatted_input)
+                    self.write_to_pipe(response, pprint)

@@ -14,8 +14,8 @@ class LocalTest(unittest.TestCase):
         except:
             pass
 
-    def execute_example(self, input, apply, load=lambda: None):
-        algo = ADK(apply, load)
+    def execute_example(self, input, apply, load=None, exception=None):
+        algo = ADK(apply, load, exception)
         output = []
         algo.init(input, pprint=lambda x: output.append(x))
         return output[0]
@@ -110,6 +110,24 @@ class LocalTest(unittest.TestCase):
         actual_output = json.loads(self.execute_without_load(input, apply_binary))
         self.assertEqual(expected_output, actual_output)
 
+    def test_exception_handling(self):
+        input = "Algorithmia"
+        side_effect_file = "/tmp/exception.txt"
+        expected_output = {'error':
+                               {'message': 'This exception was thrown in loading',
+                                'error_type': 'LoadingError',
+                                'stacktrace': ''
+                                }
+                           }
+        actual_output = json.loads(self.execute_example(input, apply_input_or_context, loading_exception, exception_write_to_file))
+        actual_output['error']['stacktrace'] = ''
+        self.assertEqual(expected_output, actual_output)
+        with open(side_effect_file) as f:
+            side_effect_output = json.load(f)
+        del expected_output['error']['error_type']
+        side_effect_output['error']['stacktrace'] = ''
+        self.assertEqual(expected_output, side_effect_output)
+        os.remove(side_effect_file)
 
 def run_test():
     unittest.main()
