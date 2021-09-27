@@ -1,6 +1,5 @@
 import Algorithmia
 import base64
-import traceback
 import json
 
 
@@ -47,7 +46,7 @@ def exception_write_to_file(exc):
     response = {
         "error": {
             "message": str(exc),
-            "stacktrace": traceback.format_exc(),
+            "stacktrace": '',
         }
     }
     with open("/tmp/exception.txt", 'w') as f:

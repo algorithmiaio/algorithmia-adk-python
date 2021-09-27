@@ -125,7 +125,6 @@ class LocalTest(unittest.TestCase):
         with open(side_effect_file) as f:
             side_effect_output = json.load(f)
         del expected_output['error']['error_type']
-        side_effect_output['error']['stacktrace'] = ''
         self.assertEqual(expected_output, side_effect_output)
         os.remove(side_effect_file)
 
