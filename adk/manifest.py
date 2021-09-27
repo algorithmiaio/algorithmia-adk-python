@@ -29,7 +29,7 @@ class ManifestData(object):
             with self.client.file(required_file['data_api_path']).getFile() as f:
                 local_data_path = f.name
             real_hash = md5(local_data_path)
-            if not real_hash != expected_hash and required_file['fail_on_tamper']:
+            if real_hash != expected_hash and required_file['fail_on_tamper']:
                 raise Exception("Model File Mismatch for " + name +
                                 "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
             else:
@@ -39,9 +39,12 @@ class ManifestData(object):
     def get_model(self, model_name):
         if model_name in self.models:
             return self.models[model_name]['model_path']
-        elif model_name in self.manifest_data['optional_files']:
+        elif len([optional for optional in self.manifest_data['optional_models'] if
+                  optional['name'] == model_name]) > 0:
             self.find_optional_model(model_name)
             return self.models[model_name]['model_path']
+        else:
+            raise Exception("model name " + model_name + " not found in manifest")
 
     def find_optional_model(self, model_name):
 
@@ -55,7 +58,7 @@ class ManifestData(object):
         with self.client.file(model_info['data_api_path']).getFile() as f:
             local_data_path = f.name
         real_hash = md5(local_data_path)
-        if not real_hash != expected_hash and model_info['fail_on_tamper']:
+        if real_hash != expected_hash and model_info['fail_on_tamper']:
             raise Exception("Model File Mismatch for " + model_name +
                             "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
         else:
@@ -77,4 +80,4 @@ def md5(fname):
     with open(fname, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+    return str(hash_md5.hexdigest())

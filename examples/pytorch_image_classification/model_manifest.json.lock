@@ -7,6 +7,7 @@
       { "name": "labels",
       "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
       "md5_checksum": "c2c37ea517e94d9795004a39431a14cb",
+      "fail_on_tamper": true,
       "metadata": {
         "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
@@ -17,6 +18,7 @@
       "name": "optional_data",
       "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
       "md5_checksum": "c2c37ea517e94d9795004a39431a14cb",
+      "fail_on_tamper": true,
       "metadata": {
         "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
