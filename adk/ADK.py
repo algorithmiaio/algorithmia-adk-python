@@ -11,15 +11,19 @@ class ADK(object):
         """
         Creates the adk object
         :param apply_func: A required function that can have an arity of 1-2, depending on if loading occurs
-        :param load_func: An optional supplier function used if load time events are required, has an arity of 0.
-        :param client: A Algorithmia Client instance that might be user defined, and is used for interacting with a model manifest file; if defined.
+        :param load_func: An optional supplier function used if load time events are required, if a model manifest is provided;
+        the function may have a single `manifest` parameter to interact with the model manifest, otherwise must have no parameters.
+        :param client: A Algorithmia Client instance that might be user defined,
+         and is used for interacting with a model manifest file; if defined.
         :param manifest_path: A development / testing facing variable used to set the name and path
         """
         self.FIFO_PATH = "/tmp/algoout"
         apply_args, _, _, _, _, _, _ = inspect.getfullargspec(apply_func)
+        self.apply_arity = len(apply_args)
         if load_func:
             load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
-            if len(load_args) > 2:
+            self.load_arity = len(load_args)
+            if self.load_arity > 2:
                 raise Exception("load function may either have no parameters, or one parameter providing the manifest "
                                 "state.")
             self.load_func = load_func
@@ -35,9 +39,10 @@ class ADK(object):
 
     def load(self):
         try:
-            if self.load_func and self.manifest.available():
+            if self.manifest.available():
                 self.manifest.initialize()
-                self.load_result = self.load_func(self.manifest)
+                if self.load_func and self.load_arity == 1:
+                    self.load_result = self.load_func(self.manifest)
             elif self.load_func:
                 self.load_result = self.load_func()
         except Exception as e:
@@ -51,7 +56,7 @@ class ADK(object):
 
     def apply(self, payload):
         try:
-            if self.load_result:
+            if self.load_result and self.apply_arity == 2:
                 apply_result = self.apply_func(payload, self.load_result)
             else:
                 apply_result = self.apply_func(payload)
