@@ -1,6 +1,7 @@
 {
   "algorithm_name": "test_algorithm",
   "timestamp": "1632770803",
+  "lock_checksum": "fba73f61886f0921b47997057e853d36",
   "required_models" : [
       { "name": "squeezenet",
       "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",

@@ -28,7 +28,7 @@ class ManifestData(object):
             expected_hash = required_file['md5_checksum']
             with self.client.file(required_file['data_api_path']).getFile() as f:
                 local_data_path = f.name
-            real_hash = md5(local_data_path)
+            real_hash = md5_for_file(local_data_path)
             if real_hash != expected_hash and required_file['fail_on_tamper']:
                 raise Exception("Model File Mismatch for " + name +
                                 "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
@@ -57,7 +57,7 @@ class ManifestData(object):
         expected_hash = model_info['md5_checksum']
         with self.client.file(model_info['data_api_path']).getFile() as f:
             local_data_path = f.name
-        real_hash = md5(local_data_path)
+        real_hash = md5_for_file(local_data_path)
         if real_hash != expected_hash and model_info['fail_on_tamper']:
             raise Exception("Model File Mismatch for " + model_name +
                             "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
@@ -70,14 +70,26 @@ def get_manifest(manifest_path):
     if os.path.exists(manifest_path):
         with open(manifest_path) as f:
             manifest_data = json.load(f)
+        expected_lock_checksum = manifest_data.get('lock_checksum')
+        del manifest_data['lock_checksum']
+        detected_lock_checksum = md5_for_str(str(manifest_data))
+        if expected_lock_checksum != detected_lock_checksum:
+            raise Exception("Manifest Lockfile Tamper Detected; please use the CLI and 'algo compile' to rebuild your "
+                            "algorithm's lock file.")
         return manifest_data
     else:
         return None
 
 
-def md5(fname):
+def md5_for_file(fname):
     hash_md5 = hashlib.md5()
     with open(fname, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
+    return str(hash_md5.hexdigest())
+
+
+def md5_for_str(content):
+    hash_md5 = hashlib.md5()
+    hash_md5.update(content.encode())
     return str(hash_md5.hexdigest())
