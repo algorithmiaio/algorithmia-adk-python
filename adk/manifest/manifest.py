@@ -1,9 +1,10 @@
 import os
 import json
 import hashlib
+from adk.manifest.classes import FileData
 
 
-class ManifestData(object):
+class Manifest(object):
     def __init__(self, client, model_manifest_path):
         self.manifest_lock_path = model_manifest_path
         self.manifest_data = get_manifest(self.manifest_lock_path)
@@ -19,51 +20,48 @@ class ManifestData(object):
     def initialize(self):
         if self.client is None:
             raise Exception("Client was not defined, please define a Client when using Model Manifests.")
-        for required_file in self.manifest_data['required_models']:
+        for required_file in self.manifest_data['required_files']:
             name = required_file['name']
             if name in self.models:
                 raise Exception("Duplicate 'name' detected. \n"
                                 + name + " was found to be used by more than one data file, please rename.")
-            self.models[name] = {}
             expected_hash = required_file['md5_checksum']
-            with self.client.file(required_file['data_api_path']).getFile() as f:
+            with self.client.file(required_file['source_uri']).getFile() as f:
                 local_data_path = f.name
             real_hash = md5_for_file(local_data_path)
             if real_hash != expected_hash and required_file['fail_on_tamper']:
                 raise Exception("Model File Mismatch for " + name +
                                 "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
             else:
-                self.models[name]["md5_checksum"] = real_hash
-                self.models[name]['model_path'] = local_data_path
+                self.models[name] = FileData(real_hash, local_data_path)
 
     def get_model(self, model_name):
         if model_name in self.models:
-            return self.models[model_name]['model_path']
-        elif len([optional for optional in self.manifest_data['optional_models'] if
+            return self.models[model_name].file_path
+        elif len([optional for optional in self.manifest_data['optional_files'] if
                   optional['name'] == model_name]) > 0:
             self.find_optional_model(model_name)
-            return self.models[model_name]['model_path']
+            return self.models[model_name].file_path
         else:
             raise Exception("model name " + model_name + " not found in manifest")
 
-    def find_optional_model(self, model_name):
+    def find_optional_model(self, file_name):
 
-        found_models = [optional for optional in self.manifest_data['optional_models'] if
-                        optional['name'] == model_name]
+        found_models = [optional for optional in self.manifest_data['optional_files'] if
+                        optional['name'] == file_name]
         if len(found_models) == 0:
-            raise Exception("model with name '" + model_name + "' not found in model manifest.")
+            raise Exception("file with name '" + file_name + "' not found in model manifest.")
         model_info = found_models[0]
-        self.models[model_name] = {}
+        self.models[file_name] = {}
         expected_hash = model_info['md5_checksum']
-        with self.client.file(model_info['data_api_path']).getFile() as f:
+        with self.client.file(model_info['source_uri']).getFile() as f:
             local_data_path = f.name
         real_hash = md5_for_file(local_data_path)
         if real_hash != expected_hash and model_info['fail_on_tamper']:
-            raise Exception("Model File Mismatch for " + model_name +
+            raise Exception("Model File Mismatch for " + file_name +
                             "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
         else:
-            self.models[model_name]["md5_checksum"] = real_hash
-            self.models[model_name]['model_path'] = local_data_path
+            self.models[file_name] = FileData(real_hash, local_data_path)
 
 
 def get_manifest(manifest_path):

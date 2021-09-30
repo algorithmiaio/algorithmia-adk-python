@@ -1,14 +1,14 @@
 {
   "algorithm_name": "test_algorithm",
   "timestamp": "1632770803",
-  "lock_checksum": "57dcf8ab156f0c86f2f275919dcbf090",
-  "required_models" : [
+  "lock_checksum": "36162a15980fa79975d2a747eb1bb842",
+  "required_files" : [
       { "name": "squeezenet",
-      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
+      "source_uri": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
       "md5_checksum": "f20b50b44fdef367a225d41f747a0963",
       "fail_on_tamper": true,
       "metadata": {
-        "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+        "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
     },
     {
@@ -17,18 +17,18 @@
       "md5_checksum": "c2c37ea517e94d9795004a39431a14cb",
       "fail_on_tamper": true,
       "metadata": {
-        "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+        "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
     }
   ],
-  "optional_models": [
+  "optional_files": [
       {
         "name": "mobilenet",
-        "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/mobilenet_v2-b0353104.pth",
+        "source_uri": "data://AlgorithmiaSE/image_cassification_demo/mobilenet_v2-b0353104.pth",
         "md5_checksum": "c2c37ea517e94d9795004a39431a14cb",
         "fail_on_tamper": false,
         "metadata": {
-            "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+            "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
           }
       }
   ]

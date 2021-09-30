@@ -1,31 +1,29 @@
 {
-  "algorithm_name": "pytorch_image_classification",
-  "required_models": [
-    {
-      "name": "model_squeezenet",
-      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
+  "required_files" : [
+      { "name": "squeezenet",
+      "source_uri": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
       "fail_on_tamper": true,
       "metadata": {
-        "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+        "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
     },
     {
       "name": "labels",
-      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
+      "source_uri": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
       "fail_on_tamper": true,
       "metadata": {
-        "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+        "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
     }
   ],
-  "optional_models": [
-    {
-      "name": "vgg",
-      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/vgg16-397923af.pth",
-      "fail_on_tamper": false,
-      "metadata": {
-        "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+  "optional_files": [
+      {
+        "name": "mobilenet",
+        "source_uri": "data://AlgorithmiaSE/image_cassification_demo/mobilenet_v2-b0353104.pth",
+        "fail_on_tamper": false,
+        "metadata": {
+            "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+          }
       }
-    }
   ]
 }

@@ -3,7 +3,7 @@ import json
 import os
 import sys
 from adk.io import create_exception, format_data, format_response
-from adk.manifest import ManifestData
+from adk.manifest.manifest import Manifest
 
 
 class ADK(object):
@@ -35,7 +35,7 @@ class ADK(object):
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
         self.loading_exception = None
-        self.manifest = ManifestData(client, manifest_path)
+        self.manifest = Manifest(client, manifest_path)
 
     def load(self):
         try:

@@ -55,7 +55,7 @@ def load(manifest):
 
     state = {}
     state["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
-    state["model"] = load_model(manifest.get_model("model_squeezenet"))
+    state["model"] = load_model(manifest.get_model("squeezenet"))
     state["labels"] = load_labels(manifest.get_model("labels"))
     return state
 

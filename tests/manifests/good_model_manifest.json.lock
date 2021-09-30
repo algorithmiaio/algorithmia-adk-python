@@ -1,34 +1,33 @@
 {
-  "algorithm_name": "test_algorithm",
   "timestamp": "1632770803",
-  "lock_checksum": "fba73f61886f0921b47997057e853d36",
-  "required_models" : [
+  "lock_checksum": "0c1cd66787a7368ef31b23d653e31bf7",
+  "required_files" : [
       { "name": "squeezenet",
-      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
+      "source_uri": "data://AlgorithmiaSE/image_cassification_demo/squeezenet1_1-f364aa15.pth",
       "md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266",
       "fail_on_tamper": true,
       "metadata": {
-        "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+        "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
     },
     {
       "name": "labels",
-      "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
+      "source_uri": "data://AlgorithmiaSE/image_cassification_demo/imagenet_class_index.json",
       "md5_checksum": "c2c37ea517e94d9795004a39431a14cb",
       "fail_on_tamper": true,
       "metadata": {
-        "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+        "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
       }
     }
   ],
-  "optional_models": [
+  "optional_files": [
       {
         "name": "mobilenet",
-        "data_api_path": "data://AlgorithmiaSE/image_cassification_demo/mobilenet_v2-b0353104.pth",
+        "source_uri": "data://AlgorithmiaSE/image_cassification_demo/mobilenet_v2-b0353104.pth",
         "md5_checksum": "f20b50b44fdef367a225d41f747a0963",
         "fail_on_tamper": false,
         "metadata": {
-            "origination_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
+            "dataset_md5_checksum": "46a44d32d2c5c07f7f66324bef4c7266"
           }
       }
   ]
