@@ -6,8 +6,8 @@ from adk.manifest.classes import FileData
 
 class ModelData(object):
     def __init__(self, client, model_manifest_path):
-        self.manifest_lock_path = model_manifest_path
-        self.manifest_data = get_manifest(self.manifest_lock_path)
+        self.manifest_freeze_path = model_manifest_path
+        self.manifest_data = get_manifest(self.manifest_freeze_path)
         self.client = client
         self.models = {}
         self.user_data = {}
@@ -74,8 +74,8 @@ def get_manifest(manifest_path):
         del manifest_data['lock_checksum']
         detected_lock_checksum = md5_for_str(str(manifest_data))
         if expected_lock_checksum != detected_lock_checksum:
-            raise Exception("Manifest Lockfile Tamper Detected; please use the CLI and 'algo compile' to rebuild your "
-                            "algorithm's lock file.")
+            raise Exception("Manifest FreezeFile Tamper Detected; please use the CLI and 'algo freeze' to rebuild your "
+                            "algorithm's freeze file.")
         return manifest_data
     else:
         return None
