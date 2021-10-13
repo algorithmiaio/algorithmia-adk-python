@@ -2,7 +2,7 @@ import sys
 import json
 import unittest
 import os
-from adk import ADK
+from tests.AdkTest import ADKTest
 import base64
 from tests.adk_algorithms import *
 
@@ -43,9 +43,9 @@ class RemoteTest(unittest.TestCase):
         if os.name == "posix":
             self.fifo_pipe = os.open(self.fifo_pipe_path, os.O_RDONLY | os.O_NONBLOCK)
 
-    def execute_example(self, input, apply, load=lambda: None):
+    def execute_example(self, input, apply, load=None):
         self.open_pipe()
-        algo = ADK(apply, load)
+        algo = ADKTest(apply, load)
         sys.stdin = input
         algo.init()
         output = self.read_in()
@@ -53,20 +53,22 @@ class RemoteTest(unittest.TestCase):
 
     def execute_without_load(self, input, apply):
         self.open_pipe()
-        algo = ADK(apply)
+        algo = ADKTest(apply)
         sys.stdin = input
         algo.init()
         output = self.read_in()
         return output
 
-    def execute_example_local(self, input, apply, load=lambda: None):
-        algo = ADK(apply, load)
-        output = algo.init(input, pprint=lambda x: x)
+    def execute_manifest_example(self, input, apply, load, manifest_path):
+        client = Algorithmia.client()
+        self.open_pipe()
+        algo = ADKTest(apply, load, manifest_path=manifest_path, client=client)
+        sys.stdin = input
+        algo.init()
+        output = self.read_in()
         return output
 
-
-
-# ----- Tests ----- #
+    # ----- Tests ----- #
 
     def test_basic(self):
         input = {'content_type': 'json', 'data': 'Algorithmia'}
@@ -91,7 +93,6 @@ class RemoteTest(unittest.TestCase):
         input = [str(json.dumps(input))]
         actual_output = self.execute_without_load(input, apply_basic)
         self.assertEqual(expected_output, actual_output)
-
 
     def test_algorithm_loading_basic(self):
         input = {'content_type': 'json', 'data': 'ignore me'}
@@ -158,6 +159,21 @@ class RemoteTest(unittest.TestCase):
         }
         input = [str(json.dumps(input))]
         actual_output = self.execute_without_load(input, apply_binary)
+        self.assertEqual(expected_output, actual_output)
+
+    def test_manifest_file_success(self):
+        input = {'content_type': 'json', 'data': 'Algorithmia'}
+        expected_output = {'metadata':
+            {
+                'content_type': 'text'
+            },
+            'result': "all model files were successfully loaded"
+        }
+        input = [str(json.dumps(input))]
+        actual_output = self.execute_manifest_example(input, apply_successful_manifest_parsing,
+                                                      loading_with_manifest,
+                                                      manifest_path="tests/manifests/good_model_manifest"
+                                                                    ".json.freeze")
         self.assertEqual(expected_output, actual_output)
 
 

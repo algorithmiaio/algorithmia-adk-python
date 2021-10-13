@@ -4,12 +4,14 @@ import hashlib
 from adk.manifest.classes import FileData
 
 
-class Manifest(object):
+class ModelData(object):
     def __init__(self, client, model_manifest_path):
         self.manifest_lock_path = model_manifest_path
         self.manifest_data = get_manifest(self.manifest_lock_path)
         self.client = client
         self.models = {}
+        self.user_data = {}
+        self.system_data = {}
 
     def available(self):
         if self.manifest_data:
