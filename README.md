@@ -93,22 +93,21 @@ from Algorithmia import ADK
 # API calls will begin at the apply() method, with the request body passed as 'input'
 # For more details, see algorithmia.com/developers/algorithm-development/languages
 
-def apply(input, globals):
+def apply(input, modelData):
     # If your apply function uses state that's loaded into memory via load, you can pass that loaded state to your apply
     # function by defining an additional "globals" parameter in your apply function.
-    return "hello {} {}".format(str(input), str(globals['payload']))
+    return "hello {} {}".format(str(input), str(modelData.user_data['payload']))
 
 
-def load():
+def load(modelData):
     # Here you can optionally define a function that will be called when the algorithm is loaded.
     # The return object from this function can be passed directly as input to your apply function.
     # A great example would be any model files that need to be available to this algorithm
     # during runtime.
 
     # Any variables returned here, will be passed as the secondary argument to your 'algorithm' function
-    globals = {}
-    globals['payload'] = "Loading has been completed."
-    return globals
+    modelData.user_data['payload'] = "Loading has been completed."
+    return modelData
 
 
 # This turns your library code into an algorithm that can run on the platform.
@@ -129,18 +128,19 @@ from PIL import Image
 import json
 from torchvision import models, transforms
 
-def load_labels(label_path, client):
-    local_path = client.file(label_path).getFile().name
-    with open(local_path) as f:
+
+client = Algorithmia.client()
+
+def load_labels(label_path):
+    with open(label_path) as f:
         labels = json.load(f)
     labels = [labels[str(k)][1] for k in range(len(labels))]
     return labels
 
 
-def load_model(model_paths, client):
+def load_model(model_path):
     model = models.squeezenet1_1()
-    local_file = client.file(model_paths["filepath"]).getFile().name
-    weights = torch.load(local_file)
+    weights = torch.load(model_path)
     model.load_state_dict(weights)
     return model.float().eval()
 
@@ -174,17 +174,15 @@ def infer_image(image_url, n, globals):
     return result
 
 
-def load(manifest):
+def load(modelData):
 
-    globals = {}
-    client = Algorithmia.client()
-    globals["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
-    globals["model"] = load_model(manifest["squeezenet"], client)
-    globals["labels"] = load_labels(manifest["label_file"], client)
-    return globals
+    modelData.user_data["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
+    modelData.user_data["model"] = load_model(modelData.get_model("squeezenet"))
+    modelData.user_data["labels"] = load_labels(modelData.get_model("labels"))
+    return modelData
 
 
-def apply(input, globals):
+def apply(input, modelData):
     if isinstance(input, dict):
         if "n" in input:
             n = input["n"]
@@ -192,10 +190,10 @@ def apply(input, globals):
             n = 3
         if "data" in input:
             if isinstance(input["data"], str):
-                output = infer_image(input["data"], n, globals)
+                output = infer_image(input["data"], n, modelData.user_data)
             elif isinstance(input["data"], list):
                 for row in input["data"]:
-                    row["predictions"] = infer_image(row["image_url"], n, globals)
+                    row["predictions"] = infer_image(row["image_url"], n, modelData.user_data)
                 output = input["data"]
             else:
                 raise Exception("\"data\" must be a image url or a list of image urls (with labels)")
@@ -206,7 +204,7 @@ def apply(input, globals):
         raise Exception("input must be a json object")
 
 
-algorithm = ADK(apply_func=apply, load_func=load)
+algorithm = ADK(apply_func=apply, load_func=load, client=client)
 algorithm.init({"data": "https://i.imgur.com/bXdORXl.jpeg"})
 
 ```

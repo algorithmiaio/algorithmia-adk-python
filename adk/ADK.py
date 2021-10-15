@@ -1,39 +1,55 @@
-import base64
 import inspect
 import json
 import os
 import sys
-import traceback
-import six
+import Algorithmia
+from adk.io import create_exception, format_data, format_response
+from adk.manifest.modeldata import ModelData
 
 
 class ADK(object):
-    def __init__(self, apply_func, load_func=None):
+    def __init__(self, apply_func, load_func=None, client=None):
         """
         Creates the adk object
         :param apply_func: A required function that can have an arity of 1-2, depending on if loading occurs
-        :param load_func: An optional supplier function used if load time events are required, has an arity of 0.
+        :param load_func: An optional supplier function used if load time events are required, if a model manifest is provided;
+        the function may have a single `manifest` parameter to interact with the model manifest, otherwise must have no parameters.
+        :param client: A Algorithmia Client instance that might be user defined,
+         and is used for interacting with a model manifest file; if defined.
         """
         self.FIFO_PATH = "/tmp/algoout"
+
+        if client:
+            self.client = client
+        else:
+            self.client = Algorithmia.client()
+
         apply_args, _, _, _, _, _, _ = inspect.getfullargspec(apply_func)
+        self.apply_arity = len(apply_args)
         if load_func:
             load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
-            if len(load_args) > 0:
-                raise Exception("load function must not have parameters")
+            self.load_arity = len(load_args)
+            if self.load_arity != 1:
+                raise Exception("load function expects 1 parameter to be used to store algorithm state")
             self.load_func = load_func
         else:
             self.load_func = None
-        if len(apply_args) > 2 or len(apply_args) == 0:
-            raise Exception("apply function may have between 1 and 2 parameters, not {}".format(len(apply_args)))
         self.apply_func = apply_func
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
         self.loading_exception = None
+        self.manifest_path = "model_manifest.json.freeze"
+        self.model_data = self.init_manifest(self.manifest_path)
+
+    def init_manifest(self, path):
+        return ModelData(self.client, path)
 
     def load(self):
         try:
+            if self.model_data.available():
+                self.model_data.initialize()
             if self.load_func:
-                self.load_result = self.load_func()
+                self.load_result = self.load_func(self.model_data)
         except Exception as e:
             self.loading_exception = e
         finally:
@@ -45,54 +61,15 @@ class ADK(object):
 
     def apply(self, payload):
         try:
-            if self.load_result:
+            if self.load_result and self.apply_arity == 2:
                 apply_result = self.apply_func(payload, self.load_result)
             else:
                 apply_result = self.apply_func(payload)
-            response_obj = self.format_response(apply_result)
+            response_obj = format_response(apply_result)
             return response_obj
         except Exception as e:
-            response_obj = self.create_exception(e)
+            response_obj = create_exception(e)
             return response_obj
-
-    def format_data(self, request):
-        if request["content_type"] in ["text", "json"]:
-            data = request["data"]
-        elif request["content_type"] == "binary":
-            data = self.wrap_binary_data(base64.b64decode(request["data"]))
-        else:
-            raise Exception("Invalid content_type: {}".format(request["content_type"]))
-        return data
-
-    def is_binary(self, arg):
-        if six.PY3:
-            return isinstance(arg, base64.bytes_types)
-
-        return isinstance(arg, bytearray)
-
-    def wrap_binary_data(self, data):
-        if six.PY3:
-            return bytes(data)
-        else:
-            return bytearray(data)
-
-    def format_response(self, response):
-        if self.is_binary(response):
-            content_type = "binary"
-            response = str(base64.b64encode(response), "utf-8")
-        elif isinstance(response, six.string_types) or isinstance(response, six.text_type):
-            content_type = "text"
-        else:
-            content_type = "json"
-        response_string = json.dumps(
-            {
-                "result": response,
-                "metadata": {
-                    "content_type": content_type
-                }
-            }
-        )
-        return response_string
 
     def write_to_pipe(self, payload, pprint=print):
         if self.is_local:
@@ -109,40 +86,24 @@ class ADK(object):
             if os.name == "nt":
                 sys.stdin = payload
 
-    def create_exception(self, exception, loading_exception=False):
-        if hasattr(exception, "error_type"):
-            error_type = exception.error_type
-        elif loading_exception:
-            error_type = "LoadingError"
-        else:
-            error_type = "AlgorithmError"
-        response = json.dumps({
-            "error": {
-                "message": str(exception),
-                "stacktrace": traceback.format_exc(),
-                "error_type": error_type,
-            }
-        })
-        return response
-
     def process_local(self, local_payload, pprint):
         result = self.apply(local_payload)
         self.write_to_pipe(result, pprint=pprint)
 
     def init(self, local_payload=None, pprint=print):
-            self.load()
-            if self.is_local and local_payload:
+        self.load()
+        if self.is_local and local_payload:
+            if self.loading_exception:
+                load_error = create_exception(self.loading_exception, loading_exception=True)
+                self.write_to_pipe(load_error, pprint=pprint)
+            self.process_local(local_payload, pprint)
+        else:
+            for line in sys.stdin:
+                request = json.loads(line)
+                formatted_input = format_data(request)
                 if self.loading_exception:
-                    load_error = self.create_exception(self.loading_exception, loading_exception=True)
+                    load_error = create_exception(self.loading_exception, loading_exception=True)
                     self.write_to_pipe(load_error, pprint=pprint)
-                self.process_local(local_payload, pprint)
-            else:
-                for line in sys.stdin:
-                    request = json.loads(line)
-                    formatted_input = self.format_data(request)
-                    if self.loading_exception:
-                        load_error = self.create_exception(self.loading_exception, loading_exception=True)
-                        self.write_to_pipe(load_error, pprint=pprint)
-                    else:
-                        result = self.apply(formatted_input)
-                        self.write_to_pipe(result)
+                else:
+                    result = self.apply(formatted_input)
+                    self.write_to_pipe(result)
