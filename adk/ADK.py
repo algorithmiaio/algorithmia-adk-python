@@ -4,7 +4,7 @@ import os
 import sys
 import Algorithmia
 from adk.io import create_exception, format_data, format_response
-from adk.manifest.modeldata import ModelData
+from adk.manifest import ModelData
 
 
 class ADK(object):
