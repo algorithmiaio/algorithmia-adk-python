@@ -30,13 +30,12 @@ jobs:
       run: |
         pip install wheel setuptools && \
         python3 setup.py bdist_wheel && \
+        pip install -U dist/* && \
         git clone https://github.com/algorithmiaio/algorithmia-python.git /tmp/algorithmia-python && \
         cd /tmp/algorithmia-python && \
         pip install -r requirements.txt && \
-        cd && \
-        pip install -U dist/* && \
+        pip install algorithmia-adk==0.0.0
         pip install pytest --quiet && \
-        cd /tmp/algorithmia-python && \
         pytest
 
 
