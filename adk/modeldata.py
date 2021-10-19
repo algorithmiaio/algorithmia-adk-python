@@ -1,7 +1,7 @@
 import os
 import json
 import hashlib
-from adk.manifest.classes import FileData
+from adk.classes import FileData
 
 
 class ModelData(object):
