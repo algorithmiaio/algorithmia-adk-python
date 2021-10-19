@@ -30,7 +30,7 @@ jobs:
       run: |
         pip install pytest --quiet
         pip install wheel twine setuptools && \
-        python3 setup.py sdist bdist_wheel && \
+        python3 setup.py bdist_wheel && \
         git clone https://github.com/algorithmiaio/algorithmia-python.git && \
         cd algorithmia-python && \
         pip install -r requirements.txt && \
