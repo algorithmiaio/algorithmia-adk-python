@@ -16,27 +16,27 @@ jobs:
       uses: actions/checkout@master
     - uses: actions/setup-python@v2
       with:
-          python-version: '3.6.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          python-version: '3.7.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
-#    - name: continous integration
-#      env:
-#        ALGORITHMIA_API_KEY: ${{ secrets.PROD_API_KEY }}
-#      run : |
-#        pip install -r requirements.txt
-#        python run_tests.py
+    - name: continous integration
+      env:
+        ALGORITHMIA_API_KEY: ${{ secrets.PROD_API_KEY }}
+      run : |
+        pip install -r requirements.txt
+        python run_tests.py
     - name: continuous integration - python API
       env:
         ALGORITHMIA_API_KEY: ${{ secrets.PROD_API_KEY }}
       run: |
-        pip install pytest --quiet
-        pip install wheel twine setuptools && \
+        pip install wheel setuptools && \
         python3 setup.py bdist_wheel && \
-        git clone https://github.com/algorithmiaio/algorithmia-python.git && \
-        cd algorithmia-python && \
+        git clone https://github.com/algorithmiaio/algorithmia-python.git /tmp/algorithmia-python && \
+        cd /tmp/algorithmia-python && \
         pip install -r requirements.txt && \
-        cd .. && \
+        cd && \
         pip install -U dist/* && \
-        cd algorithmia-python && \
+        pip install pytest --quiet && \
+        cd /tmp/algorithmia-python && \
         pytest
 
 
