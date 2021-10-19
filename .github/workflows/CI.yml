@@ -29,9 +29,14 @@ jobs:
         ALGORITHMIA_API_KEY: ${{ secrets.PROD_API_KEY }}
       run: |
         pip install pytest --quiet
+        pip install wheel twine setuptools && \
+        python3 setup.py sdist bdist_wheel && \
         git clone https://github.com/algorithmiaio/algorithmia-python.git && \
         cd algorithmia-python && \
         pip install -r requirements.txt && \
+        cd .. && \
+        pip install -U dist/* && \
+        cd algorithmia-python && \
         pytest
 
 
