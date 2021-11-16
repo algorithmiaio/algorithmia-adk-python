@@ -17,7 +17,7 @@ def load(modelData):
     # during runtime.
 
     # Any variables returned here, will be passed as the secondary argument to your 'algorithm' function
-    modelData.user_data['payload'] = "Loading has been completed."
+    modelData['payload'] = "Loading has been completed."
     return modelData
 
 
