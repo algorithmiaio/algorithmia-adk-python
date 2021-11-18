@@ -10,8 +10,23 @@ class ModelData(object):
         self.manifest_data = get_manifest(self.manifest_freeze_path)
         self.client = client
         self.models = {}
-        self.user_data = {}
-        self.system_data = {}
+        self.usr_key = "__user__"
+
+    def __getitem__(self, key):
+        return getattr(self, self.usr_key + key)
+
+    def __setitem__(self, key, value):
+        setattr(self, self.usr_key + key, value)
+
+    def data(self):
+        __dict = self.__dict__
+        output = {}
+        for key in __dict.keys():
+            if self.usr_key in key:
+                without_usr_key = key.split(self.usr_key)[1]
+                output[without_usr_key] = __dict[key]
+        return output
+
 
     def available(self):
         if self.manifest_data:

@@ -53,9 +53,9 @@ def infer_image(image_url, n, globals):
 
 def load(modelData):
 
-    modelData.user_data["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
-    modelData.user_data["model"] = load_model(modelData.get_model("squeezenet"))
-    modelData.user_data["labels"] = load_labels(modelData.get_model("labels"))
+    modelData["SMID_ALGO"] = "algo://util/SmartImageDownloader/0.2.x"
+    modelData["model"] = load_model(modelData.get_model("squeezenet"))
+    modelData["labels"] = load_labels(modelData.get_model("labels"))
     return modelData
 
 
@@ -67,10 +67,10 @@ def apply(input, modelData):
             n = 3
         if "data" in input:
             if isinstance(input["data"], str):
-                output = infer_image(input["data"], n, modelData.user_data)
+                output = infer_image(input["data"], n, modelData)
             elif isinstance(input["data"], list):
                 for row in input["data"]:
-                    row["predictions"] = infer_image(row["image_url"], n, modelData.user_data)
+                    row["predictions"] = infer_image(row["image_url"], n, modelData)
                 output = input["data"]
             else:
                 raise Exception("\"data\" must be a image url or a list of image urls (with labels)")
