@@ -38,7 +38,7 @@ class ADK(object):
         self.is_local = not os.path.exists(self.FIFO_PATH)
         self.load_result = None
         self.loading_exception = None
-        self.manifest_path = "model_manifest.json.freeze"
+        self.manifest_path = "model_manifest.json"
         self.model_data = self.init_manifest(self.manifest_path)
 
     def init_manifest(self, path):

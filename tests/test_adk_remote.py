@@ -173,7 +173,7 @@ class RemoteTest(unittest.TestCase):
         actual_output = self.execute_manifest_example(input, apply_successful_manifest_parsing,
                                                       loading_with_manifest,
                                                       manifest_path="tests/manifests/good_model_manifest"
-                                                                    ".json.freeze")
+                                                                    ".json")
         self.assertEqual(expected_output, actual_output)
 
 
