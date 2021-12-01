@@ -29,8 +29,8 @@ class ADK(object):
         if load_func:
             load_args, _, _, _, _, _, _ = inspect.getfullargspec(load_func)
             self.load_arity = len(load_args)
-            if self.load_arity != 1:
-                raise Exception("load function expects 1 parameter to be used to store algorithm state")
+            if self.load_arity not in (0, 1):
+                raise Exception("load function expects 0 parameters or 1 parameter to be used to store algorithm state")
             self.load_func = load_func
         else:
             self.load_func = None
@@ -48,8 +48,10 @@ class ADK(object):
         try:
             if self.model_data.available():
                 self.model_data.initialize()
-            if self.load_func:
+            if self.load_func and self.load_arity == 1:
                 self.load_result = self.load_func(self.model_data)
+            elif self.load_func:
+                self.load_result = self.load_func()
         except Exception as e:
             self.loading_exception = e
         finally:
