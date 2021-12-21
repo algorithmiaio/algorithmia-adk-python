@@ -23,7 +23,7 @@ class LocalTest(unittest.TestCase):
         algo.init(input, pprint=lambda x: output.append(x))
         return output[0]
 
-    def execute_manifest_example(self, input, apply, load, manifest_path="manifests/good_model_manifest.json.freeze"):
+    def execute_manifest_example(self, input, apply, load, manifest_path):
         client = Algorithmia.client()
         algo = ADKTest(apply, load, manifest_path=manifest_path, client=client)
         output = []
@@ -131,7 +131,7 @@ class LocalTest(unittest.TestCase):
         actual_output = json.loads(self.execute_manifest_example(input, apply_successful_manifest_parsing,
                                                                  loading_with_manifest,
                                                                  manifest_path="tests/manifests/good_model_manifest"
-                                                                               ".json.freeze"))
+                                                                               ".json"))
         self.assertEqual(expected_output, actual_output)
 
     def test_manifest_file_tampered(self):
@@ -145,7 +145,7 @@ class LocalTest(unittest.TestCase):
         actual_output = json.loads(self.execute_manifest_example(input, apply_successful_manifest_parsing,
                                                                  loading_with_manifest,
                                                                  manifest_path="tests/manifests/bad_model_manifest"
-                                                                               ".json.freeze"))
+                                                                               ".json"))
         self.assertEqual(expected_output, actual_output)
 
 
