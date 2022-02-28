@@ -6,12 +6,13 @@ from adk.classes import FileData
 
 class ModelData(object):
     def __init__(self, client, model_manifest_path):
-        self.manifest_path = model_manifest_path
-        self.manifest_freeze_path = "{}.freeze".format(self.manifest_path)
-        self.manifest_data = get_manifest(self.manifest_freeze_path, self.manifest_path)
+        self.manifest_reg_path = model_manifest_path
+        self.manifest_frozen_path = "{}.freeze".format(self.manifest_reg_path)
+        self.manifest_data = self.get_manifest()
         self.client = client
         self.models = {}
         self.usr_key = "__user__"
+        self.using_frozen = True
 
     def __getitem__(self, key):
         return getattr(self, self.usr_key + key)
@@ -78,28 +79,32 @@ class ModelData(object):
         with self.client.file(source_uri).getFile() as f:
             local_data_path = f.name
         real_hash = md5_for_file(local_data_path)
-        if real_hash != expected_hash and fail_on_tamper:
-            raise Exception("Model File Mismatch for " + file_name +
-                            "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
+        if self.using_frozen:
+            if real_hash != expected_hash and fail_on_tamper:
+                raise Exception("Model File Mismatch for " + file_name +
+                                "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
+            else:
+                self.models[file_name] = FileData(real_hash, local_data_path)
         else:
             self.models[file_name] = FileData(real_hash, local_data_path)
 
 
-def get_manifest(manifest_frozen_path, manifest_reg_path):
-    if os.path.exists(manifest_frozen_path):
-        with open(manifest_frozen_path) as f:
-            manifest_data = json.load(f)
-        if check_lock(manifest_data):
+    def get_manifest(self):
+        if os.path.exists(self.manifest_frozen_path):
+            with open(self.manifest_frozen_path) as f:
+                manifest_data = json.load(f)
+            if check_lock(manifest_data):
+                return manifest_data
+            else:
+                raise Exception("Manifest FreezeFile Tamper Detected; please use the CLI and 'algo freeze' to rebuild your "
+                                "algorithm's freeze file.")
+        elif os.path.exists(self.manifest_reg_path):
+            with open(self.manifest_reg_path) as f:
+                manifest_data = json.load(f)
+            self.using_frozen = False
             return manifest_data
         else:
-            raise Exception("Manifest FreezeFile Tamper Detected; please use the CLI and 'algo freeze' to rebuild your "
-                            "algorithm's freeze file.")
-    elif os.path.exists(manifest_reg_path):
-        with open(manifest_reg_path) as f:
-            manifest_data = json.load(f)
-        return manifest_data
-    else:
-        return None
+            return None
 
 
 def check_lock(manifest_data):
