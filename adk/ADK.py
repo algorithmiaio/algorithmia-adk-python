@@ -94,7 +94,7 @@ class ADK(object):
 
     def init(self, local_payload=None, pprint=print):
         self.load()
-        if self.is_local and local_payload:
+        if self.is_local and local_payload is not None:
             if self.loading_exception:
                 load_error = create_exception(self.loading_exception, loading_exception=True)
                 self.write_to_pipe(load_error, pprint=pprint)
