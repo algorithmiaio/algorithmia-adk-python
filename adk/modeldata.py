@@ -2,10 +2,11 @@ import os
 import json
 import hashlib
 from adk.classes import FileData
+from adk.mlops import MLOps
 
 
 class ModelData(object):
-    def __init__(self, client, model_manifest_path):
+    def __init__(self, client, model_manifest_path, mlops=False):
         self.manifest_reg_path = model_manifest_path
         self.manifest_frozen_path = "{}.freeze".format(self.manifest_reg_path)
         self.manifest_data = self.get_manifest()
@@ -13,6 +14,7 @@ class ModelData(object):
         self.models = {}
         self.usr_key = "__user__"
         self.using_frozen = True
+        self.use_mlops = mlops
 
     def __getitem__(self, key):
         return getattr(self, self.usr_key + key)
@@ -38,6 +40,8 @@ class ModelData(object):
     def initialize(self):
         if self.client is None:
             raise Exception("Client was not defined, please define a Client when using Model Manifests.")
+        if self.use_mlops:
+            self.mlops_init()
         for required_file in self.manifest_data['required_files']:
             name = required_file['name']
             source_uri = required_file['source_uri']
@@ -88,7 +92,6 @@ class ModelData(object):
         else:
             self.models[file_name] = FileData(real_hash, local_data_path)
 
-
     def get_manifest(self):
         if os.path.exists(self.manifest_frozen_path):
             with open(self.manifest_frozen_path) as f:
@@ -96,8 +99,9 @@ class ModelData(object):
             if check_lock(manifest_data):
                 return manifest_data
             else:
-                raise Exception("Manifest FreezeFile Tamper Detected; please use the CLI and 'algo freeze' to rebuild your "
-                                "algorithm's freeze file.")
+                raise Exception(
+                    "Manifest FreezeFile Tamper Detected; please use the CLI and 'algo freeze' to rebuild your "
+                    "algorithm's freeze file.")
         elif os.path.exists(self.manifest_reg_path):
             with open(self.manifest_reg_path) as f:
                 manifest_data = json.load(f)
@@ -105,6 +109,18 @@ class ModelData(object):
             return manifest_data
         else:
             return None
+
+    def mlops_init(self):
+        mlops = self.manifest_data['mlops']
+        model_id = mlops['model_id']
+        deployment_id = mlops['deployment_id']
+        datarobot_api_endpoint = mlops['datarobot_api_endpoint']
+
+        api_token = os.environ.get('DATAROBOT_MLOPS_API_TOKEN')
+        if api_token is None:
+            raise Exception("'DATAROBOT_MLOPS_API_TOKEN' environment variable not found.\nPlease ensure that you have a"
+                            "valid API token and add it as a secret to this algorithm.")
+        self.mlops = MLOps(datarobot_api_endpoint, api_token, model_id, deployment_id)
 
 
 def check_lock(manifest_data):

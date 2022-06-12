@@ -3,6 +3,10 @@ import json
 import os
 import sys
 import Algorithmia
+import yaml
+import os
+import subprocess
+
 from adk.io import create_exception, format_data, format_response
 from adk.modeldata import ModelData
 
@@ -92,7 +96,24 @@ class ADK(object):
         result = self.apply(local_payload)
         self.write_to_pipe(result, pprint=pprint)
 
-    def init(self, local_payload=None, pprint=print):
+    def mlops_initialize(self):
+        os.environ["MLOPS_SPOOLER_TYPE"] = "FILESYSTEM"
+        os.environ["MLOPS_FILESYSTEM_DIRECTORY"] = self.mlops_spool_dir
+        with open(f'{agents_dir}/conf/mlops.agent.conf.yaml') as f:
+            documents = yaml.load(f, Loader=yaml.FullLoader)
+        documents['mlopsUrl'] = DATAROBOT_ENDPOINT
+        documents['apiToken'] = DATAROBOT_API_TOKEN
+        with open(f'{agents_dir}/conf/mlops.agent.conf.yaml', 'w') as f:
+            yaml.dump(documents, f)
+        subprocess.call(f'{agents_dir}/bin/start-agent.sh')
+        check = subprocess.Popen([f'{agents_dir}/bin/status-agent.sh'], stdout=subprocess.PIPE)
+        check.terminate()
+
+
+
+    def init(self, local_payload=None, pprint=print, mlops=False):
+        if mlops and not self.is_local:
+            self.mlops_initialize()
         self.load()
         if self.is_local and local_payload is not None:
             if self.loading_exception:
