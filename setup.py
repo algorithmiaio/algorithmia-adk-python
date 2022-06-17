@@ -14,6 +14,7 @@ setup(
     author_email='support@algorithmia.com',
     packages=['adk'],
     install_requires=[
+        'pyaml>=21.10,<21.11',
         'six',
     ],
     include_package_data=True,

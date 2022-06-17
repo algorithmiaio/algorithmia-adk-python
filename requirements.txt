@@ -1,2 +1,3 @@
 algorithmia>=1.7,<2
 six
+pyaml>=21.10,<21.11

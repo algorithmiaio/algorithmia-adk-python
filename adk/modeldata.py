@@ -88,7 +88,6 @@ class ModelData(object):
         else:
             self.models[file_name] = FileData(real_hash, local_data_path)
 
-
     def get_manifest(self):
         if os.path.exists(self.manifest_frozen_path):
             with open(self.manifest_frozen_path) as f:
@@ -96,8 +95,9 @@ class ModelData(object):
             if check_lock(manifest_data):
                 return manifest_data
             else:
-                raise Exception("Manifest FreezeFile Tamper Detected; please use the CLI and 'algo freeze' to rebuild your "
-                                "algorithm's freeze file.")
+                raise Exception(
+                    "Manifest FreezeFile Tamper Detected; please use the CLI and 'algo freeze' to rebuild your "
+                    "algorithm's freeze file.")
         elif os.path.exists(self.manifest_reg_path):
             with open(self.manifest_reg_path) as f:
                 manifest_data = json.load(f)

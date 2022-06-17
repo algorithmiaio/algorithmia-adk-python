@@ -3,8 +3,12 @@ import json
 import os
 import sys
 import Algorithmia
+import os
+import subprocess
+
 from adk.io import create_exception, format_data, format_response
 from adk.modeldata import ModelData
+from adk.mlops import MLOps
 
 
 class ADK(object):
@@ -17,6 +21,7 @@ class ADK(object):
         :param client: A Algorithmia Client instance that might be user defined,
          and is used for interacting with a model manifest file; if defined.
         """
+        self.mlops = None
         self.FIFO_PATH = "/tmp/algoout"
 
         if client:
@@ -39,10 +44,8 @@ class ADK(object):
         self.load_result = None
         self.loading_exception = None
         self.manifest_path = "model_manifest.json"
-        self.model_data = self.init_manifest(self.manifest_path)
-
-    def init_manifest(self, path):
-        return ModelData(self.client, path)
+        self.mlops_path = "mlops.json"
+        self.model_data = ModelData(self.client, self.manifest_path)
 
     def load(self):
         try:
@@ -91,8 +94,18 @@ class ADK(object):
     def process_local(self, local_payload, pprint):
         result = self.apply(local_payload)
         self.write_to_pipe(result, pprint=pprint)
+        
+    def mlops_init(self):
+        mlops_token = os.environ.get("DATAROBOT_MLOPS_API_TOKEN", None)
+        if mlops_token:
+            self.mlops = MLOps(mlops_token, self.mlops_path)
+            self.mlops.init()
+        else:
+            raise Exception("'DATAROBOT_MLOPS_API_TOKEN' was not found, please set to use mlops.")
 
-    def init(self, local_payload=None, pprint=print):
+    def init(self, local_payload=None, pprint=print, mlops=False):
+        if mlops and not self.is_local:
+            self.mlops_init()
         self.load()
         if self.is_local and local_payload is not None:
             if self.loading_exception:
