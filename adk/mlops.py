@@ -8,6 +8,7 @@ class MLOps(object):
     spool_dir = "/tmp/ta"
     agent_dir = "/opt/mlops-agent"
     mlops_dir_name = "datarobot_mlops_package-8.1.2"
+    total_dir_path = agent_dir + "/" + mlops_dir_name
 
     def __init__(self, api_token, path):
         self.token = api_token
@@ -29,15 +30,15 @@ class MLOps(object):
         os.environ['MLOPS_SPOOLER_TYPE'] = "FILESYSTEM"
         os.environ['MLOPS_FILESYSTEM_DIRECTORY'] = self.spool_dir
 
-        with open(f'{self.agent_dir}/{self.mlops_dir_name}/conf/mlops.agent.conf.yaml') as f:
+        with open(total_dir_path + '/conf/mlops.agent.conf.yaml') as f:
             documents = yaml.load(f, Loader=yaml.FullLoader)
         documents['mlopsUrl'] = self.endpoint
         documents['apiToken'] = self.token
-        with open(f'{self.agent_dir}/{self.mlops_dir_name}/conf/mlops.agent.conf.yaml', 'w') as f:
+        with open(total_dir_path + '/conf/mlops.agent.conf.yaml', 'w') as f:
             yaml.dump(documents, f)
 
-        subprocess.call(f'{self.agent_dir}/{self.mlops_dir_name}/bin/start-agent.sh')
-        check = subprocess.Popen([f'{self.agent_dir}/{self.mlops_dir_name}/bin/status-agent.sh'], stdout=subprocess.PIPE)
+        subprocess.call(total_dir_path + '/bin/start-agent.sh')
+        check = subprocess.Popen([total_dir_path + '/bin/status-agent.sh'], stdout=subprocess.PIPE)
         output = check.stdout.readlines()[0]
         check.terminate()
         if b"DataRobot MLOps-Agent is running as a service." in output:
