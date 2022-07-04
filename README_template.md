@@ -8,6 +8,8 @@ This document will describe the following:
 - What is an Algorithm Development Kit
 - Changes to Algorithm development
 - Example workflows you can use to create your own Algorithms.
+- The Model Manifest System
+- Datarobot MLOps integrations support
 
 
 ## What is an Algorithm Development Kit
@@ -54,6 +56,44 @@ Check out these examples to help you get started:
 <!-- embedme examples/pytorch_image_classification/src/Algorithm.py -->
 ```python
 ```
+
+## The Model Manifest System
+Model Manifests are optional files that you can provide to your algorithm to easily
+define important model files, their locations; and metadata - this file is called `model_manifest.json`.
+<!-- embedme examples/pytorch_image_classification/model_manifest.json -->
+```python
+```
+With the Model Manifest system, you're also able to "freeze" your model_manifest.json, creating a model_manifest.json.freeze.
+This file encodes the hash of the model file, preventing tampering once frozen - forver locking a version of your algorithm code with your model file.
+<!-- embedme examples/pytorch_image_classification/model_manifest.json.freeze -->
+```python
+```
+
+As you can link to both hosted data collections, and AWS/GCP/Azure based block storage media, you're able to link your algorithm code with your model files, wherever they live today.
+
+
+## Datarobot MLOps Integration
+As part of the integration with Datarobot, we've built out integration support for the [DataRobot MLOps Agent](https://docs.datarobot.com/en/docs/mlops/deployment/mlops-agent/index.html)
+By selecting `mlops=True` as part of the ADK `init()` function, the ADK will configure and setup the MLOps Agent to support writing content directly back to DataRobot.
+
+
+For this, you'll need to select an MLOps Enabled Environment; and you will need to setup a DataRobot External Deployment.
+Once setup, you will need to define your `mlops.json` file, including your deployment and model ids.
+
+<!-- embedme examples/mlops_hello_world/mlops.json -->
+```python
+```
+
+Along with defining your `DATAROBOT_MLOPS_API_TOKEN` as a secret to your Algorithm, you're ready to start sending MLOps data back to DataRobot!
+
+<!-- embedme examples/mlops_hello_world/src/Algorithm.py -->
+```python
+```
+
+report_deployment_stats()
+
+
+
 
 ## Readme publishing
 To compile the template readme, please check out [embedme](https://github.com/zakhenry/embedme) utility
