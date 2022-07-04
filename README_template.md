@@ -61,12 +61,12 @@ Check out these examples to help you get started:
 Model Manifests are optional files that you can provide to your algorithm to easily
 define important model files, their locations; and metadata - this file is called `model_manifest.json`.
 <!-- embedme examples/pytorch_image_classification/model_manifest.json -->
-```python
+```json
 ```
 With the Model Manifest system, you're also able to "freeze" your model_manifest.json, creating a model_manifest.json.freeze.
 This file encodes the hash of the model file, preventing tampering once frozen - forver locking a version of your algorithm code with your model file.
 <!-- embedme examples/pytorch_image_classification/model_manifest.json.freeze -->
-```python
+```json
 ```
 
 As you can link to both hosted data collections, and AWS/GCP/Azure based block storage media, you're able to link your algorithm code with your model files, wherever they live today.
@@ -81,7 +81,7 @@ For this, you'll need to select an MLOps Enabled Environment; and you will need 
 Once setup, you will need to define your `mlops.json` file, including your deployment and model ids.
 
 <!-- embedme examples/mlops_hello_world/mlops.json -->
-```python
+```json
 ```
 
 Along with defining your `DATAROBOT_MLOPS_API_TOKEN` as a secret to your Algorithm, you're ready to start sending MLOps data back to DataRobot!
@@ -89,9 +89,6 @@ Along with defining your `DATAROBOT_MLOPS_API_TOKEN` as a secret to your Algorit
 <!-- embedme examples/mlops_hello_world/src/Algorithm.py -->
 ```python
 ```
-
-report_deployment_stats()
-
 
 
 

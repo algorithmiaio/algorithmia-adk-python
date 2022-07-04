@@ -215,7 +215,7 @@ algorithm.init({"data": "https://i.imgur.com/bXdORXl.jpeg"})
 Model Manifests are optional files that you can provide to your algorithm to easily
 define important model files, their locations; and metadata - this file is called `model_manifest.json`.
 <!-- embedme examples/pytorch_image_classification/model_manifest.json -->
-```python
+```json
 {
   "required_files" : [
       { "name": "squeezenet",
@@ -249,7 +249,7 @@ define important model files, their locations; and metadata - this file is calle
 With the Model Manifest system, you're also able to "freeze" your model_manifest.json, creating a model_manifest.json.freeze.
 This file encodes the hash of the model file, preventing tampering once frozen - forver locking a version of your algorithm code with your model file.
 <!-- embedme examples/pytorch_image_classification/model_manifest.json.freeze -->
-```python
+```json
 {
    "required_files":[
       {
@@ -298,7 +298,7 @@ For this, you'll need to select an MLOps Enabled Environment; and you will need 
 Once setup, you will need to define your `mlops.json` file, including your deployment and model ids.
 
 <!-- embedme examples/mlops_hello_world/mlops.json -->
-```python
+```json
 {
   "model_id": "YOUR_MODEL_ID",
   "deployment_id": "YOUR_DEPLOYMENT_ID",
@@ -344,9 +344,6 @@ algorithm.init(0.25, mlops=True)
 
 
 ```
-
-report_deployment_stats()
-
 
 
 
