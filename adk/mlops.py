@@ -30,15 +30,15 @@ class MLOps(object):
         os.environ['MLOPS_SPOOLER_TYPE'] = "FILESYSTEM"
         os.environ['MLOPS_FILESYSTEM_DIRECTORY'] = self.spool_dir
 
-        with open(total_dir_path + '/conf/mlops.agent.conf.yaml') as f:
+        with open(self.total_dir_path + '/conf/mlops.agent.conf.yaml') as f:
             documents = yaml.load(f, Loader=yaml.FullLoader)
         documents['mlopsUrl'] = self.endpoint
         documents['apiToken'] = self.token
-        with open(total_dir_path + '/conf/mlops.agent.conf.yaml', 'w') as f:
+        with open(self.total_dir_path + '/conf/mlops.agent.conf.yaml', 'w') as f:
             yaml.dump(documents, f)
 
-        subprocess.call(total_dir_path + '/bin/start-agent.sh')
-        check = subprocess.Popen([total_dir_path + '/bin/status-agent.sh'], stdout=subprocess.PIPE)
+        subprocess.call(self.total_dir_path + '/bin/start-agent.sh')
+        check = subprocess.Popen([self.total_dir_path + '/bin/status-agent.sh'], stdout=subprocess.PIPE)
         output = check.stdout.readlines()[0]
         check.terminate()
         if b"DataRobot MLOps-Agent is running as a service." in output:
