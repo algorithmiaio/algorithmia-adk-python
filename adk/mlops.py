@@ -15,14 +15,18 @@ class MLOps(object):
         if os.path.exists(path):
             with open(path) as f:
                 mlops_config = json.load(f)
-        else:
-            raise Exception("'mlops.json' file does not exist, but mlops was requested.")
+            self.endpoint = mlops_config['datarobot_mlops_service_url']
+            self.model_id = mlops_config['model_id']
+            self.deployment_id = mlops_config['deployment_id']
+            self.mlops_name = mlops_config.get('mlops_dir_name', 'datarobot_mlops_package-8.1.2')
+        if "MLOPS_SERVICE_URL" in os.environ:
+            self.endpoint = os.environ['MLOPS_SERVICE_URL']
+        if "MODEL_ID" in os.environ:
+            self.model_id = os.environ['MODEL_ID']
+        if "DEPLOYMENT_ID" in os.environ:
+            self.deployment_id = os.environ['DEPLOYMENT_ID']
         if not os.path.exists(self.agent_dir):
             raise Exception("environment is not configured for mlops.\nPlease select a valid mlops enabled environment.")
-        self.endpoint = mlops_config['datarobot_mlops_service_url']
-        self.model_id = mlops_config['model_id']
-        self.deployment_id = mlops_config['deployment_id']
-        self.mlops_name = mlops_config.get('mlops_dir_name', 'datarobot_mlops_package-8.1.2')
 
     def init(self):
         os.environ['MLOPS_DEPLOYMENT_ID'] = self.deployment_id
