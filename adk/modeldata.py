@@ -56,37 +56,42 @@ class ModelData(object):
                 self.models[name] = FileData(real_hash, local_data_path)
 
     def get_model(self, model_name):
-        if model_name in self.models:
-            return self.models[model_name].file_path
-        elif len([optional for optional in self.manifest_data['optional_files'] if
-                  optional['name'] == model_name]) > 0:
-            self.find_optional_model(model_name)
-            return self.models[model_name].file_path
+        if self.available():
+            if model_name in self.models:
+                return self.models[model_name].file_path
+            elif len([optional for optional in self.manifest_data['optional_files'] if
+                      optional['name'] == model_name]) > 0:
+                self.find_optional_model(model_name)
+                return self.models[model_name].file_path
+            else:
+                raise Exception("model name " + model_name + " not found in manifest")
         else:
-            raise Exception("model name " + model_name + " not found in manifest")
+            raise Exception("unable to get model {}, model_manifest.json not found.".format(model_name))
 
     def find_optional_model(self, file_name):
-
-        found_models = [optional for optional in self.manifest_data['optional_files'] if
-                        optional['name'] == file_name]
-        if len(found_models) == 0:
-            raise Exception("file with name '" + file_name + "' not found in model manifest.")
-        model_info = found_models[0]
-        self.models[file_name] = {}
-        source_uri = model_info['source_uri']
-        fail_on_tamper = model_info.get("fail_on_tamper", False)
-        expected_hash = model_info.get('md5_checksum', None)
-        with self.client.file(source_uri).getFile() as f:
-            local_data_path = f.name
-        real_hash = md5_for_file(local_data_path)
-        if self.using_frozen:
-            if real_hash != expected_hash and fail_on_tamper:
-                raise Exception("Model File Mismatch for " + file_name +
-                                "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
+        if self.available():
+            found_models = [optional for optional in self.manifest_data['optional_files'] if
+                            optional['name'] == file_name]
+            if len(found_models) == 0:
+                raise Exception("file with name '" + file_name + "' not found in model manifest.")
+            model_info = found_models[0]
+            self.models[file_name] = {}
+            source_uri = model_info['source_uri']
+            fail_on_tamper = model_info.get("fail_on_tamper", False)
+            expected_hash = model_info.get('md5_checksum', None)
+            with self.client.file(source_uri).getFile() as f:
+                local_data_path = f.name
+            real_hash = md5_for_file(local_data_path)
+            if self.using_frozen:
+                if real_hash != expected_hash and fail_on_tamper:
+                    raise Exception("Model File Mismatch for " + file_name +
+                                    "\nexpected hash:  " + expected_hash + "\nreal hash: " + real_hash)
+                else:
+                    self.models[file_name] = FileData(real_hash, local_data_path)
             else:
                 self.models[file_name] = FileData(real_hash, local_data_path)
         else:
-            self.models[file_name] = FileData(real_hash, local_data_path)
+            raise Exception("unable to get model {}, model_manifest.json not found.".format(model_name))
 
     def get_manifest(self):
         if os.path.exists(self.manifest_frozen_path):
