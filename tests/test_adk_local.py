@@ -135,17 +135,18 @@ class LocalTest(unittest.TestCase):
         self.assertEqual(expected_output, actual_output)
 
     def test_manifest_file_tampered(self):
-        input = "Algorithmia"
+        input = 'Algorithmia'
         expected_output = {"error": {"error_type": "LoadingError",
                                      "message": "Model File Mismatch for squeezenet\n"
                                                 "expected hash:  f20b50b44fdef367a225d41f747a0963\n"
                                                 "real hash: 46a44d32d2c5c07f7f66324bef4c7266",
-                                     "stacktrace": "NoneType: None\n"}}
+                                     "stacktrace": ''}}
 
         actual_output = json.loads(self.execute_manifest_example(input, apply_successful_manifest_parsing,
                                                                  loading_with_manifest,
                                                                  manifest_path="tests/manifests/bad_model_manifest"
                                                                                ".json"))
+        actual_output['error']['stacktrace'] = ''
         self.assertEqual(expected_output, actual_output)
 
 

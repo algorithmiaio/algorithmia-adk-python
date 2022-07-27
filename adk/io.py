@@ -57,7 +57,7 @@ def create_exception(exception, loading_exception=False):
     response = json.dumps({
         "error": {
             "message": str(exception),
-            "stacktrace": traceback.format_exc(),
+            "stacktrace": " ".join(traceback.format_exception(etype=type(exception), value=exception, tb=exception.__traceback__)),
             "error_type": error_type,
         }
     })

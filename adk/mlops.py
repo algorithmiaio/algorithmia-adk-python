@@ -28,6 +28,16 @@ class MLOps(object):
         if not os.path.exists(self.agent_dir):
             raise Exception("environment is not configured for mlops.\nPlease select a valid mlops enabled environment.")
 
+        if self.endpoint is None:
+            raise Exception("'no endpoint found, please add 'MLOPS_SERVICE_URL' environment variable, or create an "
+                            "mlops.json file")
+        if self.model_id is None:
+            raise Exception("no model_id found, please add 'MODEL_ID' environment variable, or create an mlops.json "
+                            "file")
+        if self.deployment_id is None:
+            raise Exception("no deployment_id found, please add 'DEPLOYMENT_ID' environment variable, or create an "
+                            "mlops.json file")
+
     def init(self):
         os.environ['MLOPS_DEPLOYMENT_ID'] = self.deployment_id
         os.environ['MLOPS_MODEL_ID'] = self.model_id
